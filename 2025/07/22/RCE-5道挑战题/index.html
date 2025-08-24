@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="RCE 5道挑战题"><meta name="keywords" content="RCE"><meta name="author" content="JGwebre,undefined"><meta name="copyright" content="JGwebre"><title>RCE 5道挑战题【JG的个人博客】</title><link rel="stylesheet" href="/css/fan.css"><link rel="stylesheet" href="/css/thirdparty/jquery.mCustomScrollbar.min.css"><link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch.min.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch-theme-algolia.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4"></script><!-- link(rel="dns-prefetch" href="https://cdn.jsdelivr.net")--><!-- link(rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css")--><!-- script(src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer)--><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- script(src=url_for("/js/mathjax/mathjax.js"))--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+});
+</script><script>var isPassword = '' || false;
+if (isPassword) {
+    if (prompt('请输入文章密码') !== '') {
+        alert('密码错误！');
+        history.back();
+    }
+}</script><script>window.GLOBAL_CONFIG = {
+  root: '/',
+  algolia: {"appId":"M89DTZNQI5","apiKey":"3349454e63ed12455aa77088742476f1","indexName":"heisha","hits":{"per_page":10},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: {"path":"search.json","languages":{"hits_empty":"local_search.hits_empty"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  gitment: {},
+  valine: {"appId":"vBmF8qvDShMMqm39diUFWroM-gzGzoHsz","appKey":"vcClV59WM7pPzz3R46pITQlv","placeholder":"welcome to say something..."},
+  twikoo: {},
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="JG的个人博客" type="application/atom+xml">
+</head><body><canvas id="universe"></canvas><!--#body--><div id="sidebar"><div class="toggle-sidebar-info button-hover"><span data-toggle="文章目录">站点概览</span></div><div class="sidebar-toc"><div class="sidebar-toc-title">目录</div><div class="sidebar-toc-progress"><span class="progress-notice">您已阅读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc-progress-bar"></div></div><div class="sidebar-toc-content" id="sidebar-toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">问题：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web1"><span class="toc-number">2.</span> <span class="toc-text">web1</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E6%B3%951"><span class="toc-number">2.0.0.1.</span> <span class="toc-text">解法1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E6%B3%952"><span class="toc-number">2.0.0.2.</span> <span class="toc-text">解法2</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web2"><span class="toc-number">3.</span> <span class="toc-text">web2</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E6%B3%951-1"><span class="toc-number">3.0.0.1.</span> <span class="toc-text">解法1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E6%B3%952-1"><span class="toc-number">3.0.0.2.</span> <span class="toc-text">解法2</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-1%EF%BC%9A%E5%B0%86%E6%99%AE%E9%80%9A%E5%87%BD%E6%95%B0%E8%BD%AC%E6%8D%A2%E4%B8%BA%E9%97%AD%E5%8C%85"><span class="toc-number">3.0.0.2.1.</span> <span class="toc-text">示例 1：将普通函数转换为闭包</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-2%EF%BC%9A%E5%B0%86%E7%B1%BB%E6%96%B9%E6%B3%95%E8%BD%AC%E6%8D%A2%E4%B8%BA%E9%97%AD%E5%8C%85"><span class="toc-number">3.0.0.2.2.</span> <span class="toc-text">示例 2：将类方法转换为闭包</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-3%EF%BC%9A%E5%B0%86%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95%E8%BD%AC%E6%8D%A2%E4%B8%BA%E9%97%AD%E5%8C%85"><span class="toc-number">3.0.0.2.3.</span> <span class="toc-text">示例 3：将静态方法转换为闭包</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-4%EF%BC%9A%E5%B0%86%E5%8C%BF%E5%90%8D%E5%87%BD%E6%95%B0%E8%BD%AC%E6%8D%A2%E4%B8%BA%E9%97%AD%E5%8C%85"><span class="toc-number">3.0.0.2.4.</span> <span class="toc-text">示例 4：将匿名函数转换为闭包</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-5%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%8F%AF%E8%B0%83%E7%94%A8%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.0.0.2.5.</span> <span class="toc-text">示例 5：使用可调用对象</span></a></li><li class="toc-item toc-level-6"><a class="toc-link"><span class="toc-number">3.0.0.2.6.</span> <span class="toc-text"></span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web3"><span class="toc-number">4.</span> <span class="toc-text">web3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web4"><span class="toc-number">5.</span> <span class="toc-text">web4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web5"><span class="toc-number">6.</span> <span class="toc-text">web5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="author-info hide"><div class="author-info-avatar"><img class="author-info-avatar-img" src="/avatar.png"></div><div class="author-info-name">JGwebre</div><div class="author-info-description"></div><div class="links-buttons"><a class="links-button button-hover" href="https://github.com/heisha123" target="_blank">GitHub<i class="icon-dot bg-color6"></i></a><a class="links-button button-hover" href="mailto:gzyjslb@163.com" target="_blank">E-Mail<i class="icon-dot bg-color1"></i></a><a class="links-button button-hover" href="tencent://message/?uin=1852384503&amp;Site=&amp;Menu=yes" target="_blank">QQ<i class="icon-dot bg-color3"></i></a></div><div class="author-info-articles"><a class="author-info-articles-archives article-meta" href="/archives"><span class="pull-top">日志</span><span class="pull-bottom">17</span></a><a class="author-info-articles-tags article-meta" href="/tags"><span class="pull-top">标签</span><span class="pull-bottom">11</span></a><a class="author-info-articles-categories article-meta" href="/categories"><span class="pull-top">分类</span><span class="pull-bottom">1</span></a></div></div></div><div id="main-container"><header><div id="menu-outer"><i class="menu-list-icon fas fa-bars"></i><nav id="menu-inner"><a class="menu-item" href="/">首页</a><a class="menu-item" href="/tags">标签</a><a class="menu-item" href="/categories">分类</a><a class="menu-item" href="/archives">归档</a><a class="menu-item" href="/about">关于</a></nav><div class="right-info"><a class="search social-icon"><i class="fas fa-search"></i><span> 搜索</span></a><a class="title-name" href="/">JG的个人博客</a><span id="now-time"></span></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><div class="post-header"><div class="title">RCE 5道挑战题</div><div class="container"><time class="button-hover post-date"><i class="fas fa-calendar-alt article-icon" aria-hidden="true"></i> 发表于 2025-07-22 | 更新于 2025-07-23</time><!--time.button-hover.post-date #[i.fas.fa-calendar-alt.article-icon(aria-hidden="true")] #[=__('post.modified')] #[=date(page['updated'], config.date_format)]--><div class="button-hover categories"><i class="fa fa-inbox article-icon" aria-hidden="true"></i><a class="link-a" href="/categories/web%E5%AE%89%E5%85%A8/">web安全</a></div><div class="button-hover tags"><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/RCE/">RCE</a></div></div></div><div class="main-content"><h2 id="问题："><a href="#问题：" class="headerlink" title="问题："></a>问题：</h2><span id="more"></span>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">    unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line">$a = call_user_func($action, $parameters);</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="web1"><a href="#web1" class="headerlink" title="web1"></a>web1</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">    unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$a = call_user_func($action, ...$parameters);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们现在虚拟机下部署一下环境</p>
+<p>分析</p>
+<p>这里我们可以很容易的关注到</p>
+<p><code>...$parameters</code> 这是一个可变参数</p>
+<p><code>call_user_func</code> 这是一个回调函数</p>
+<p><code>unset</code> 这个函数去官网查查</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722204842784.png" alt="image-20250722204842784"></p>
+<p>发现他能够销毁<code>$parameters</code> 中的<code>action</code> </p>
+<h5 id="解法1"><a href="#解法1" class="headerlink" title="解法1"></a>解法1</h5><p>我们试着传参</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?action=system&amp;0=id</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722205051183.png" alt="image-20250722205051183"></p>
+<p>成功执行了</p>
+<p>我们下断看一下，是什么流程</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722205145800.png" alt="image-20250722205145800"></p>
+<p>我们传入的 两个参数都会被 <code>...$parameters</code> 这个可变参数接收 形成了数组，</p>
+<p>然后经过<code>unset($parameters[&#39;action&#39;]);</code> 会删除数组中的key是action的字段</p>
+<p>最后只剩下了id</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722205339850.png" alt="image-20250722205339850"></p>
+<p>最后执行了我们的回调函数</p>
+<h5 id="解法2"><a href="#解法2" class="headerlink" title="解法2"></a>解法2</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?action=usort&amp;0[0]=system&amp;0[1]=ls&amp;1=call_user_func</span><br></pre></td></tr></table></figure>
+
+<p>这个解法的原理就是 因为<code>$parameters</code> 是可变参数，所以我们就可以利用他的特性</p>
+<p><code>可变参数列表是指在函数的参数列表中使用省略号（…）来表示不定数量的参数。在函数中使用可变参数列表时，需要将该参数作为一个数组来处理</code></p>
+<p>在看看官方文档<code>usort</code> 的定义</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722210024191.png" alt="image-20250722210024191"></p>
+<p>我们可以看到他可以接收callback</p>
+<p>那么这个payload的利用方式就是，给action传入usort，然后给parameters 传入system，ls，all_user_func</p>
+<p>usort先给parameters数组排序，但是里面有callback，就会调用 all_user_func，然后all_user_func 又调用 system这个函数对ls做处理，最后达到了rce</p>
+<h2 id="web2"><a href="#web2" class="headerlink" title="web2"></a>web2</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">    unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func($action, $parameters)($_POST[&#x27;a&#x27;])($_POST[&#x27;b&#x27;]);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这个代码我在linux上复现发现，无论我将php版本调到5.6 还是7.3，都无法访问，爆500错误</p>
+<p>然后我们尝试在代码前加入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&#x27;display_errors&#x27;, 1);</span><br><span class="line">ini_set(&#x27;display_startup_errors&#x27;, 1);</span><br><span class="line">error_reporting(E_ALL);</span><br></pre></td></tr></table></figure>
+
+<p>看看具体是什么原因的错误</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250723171004717.png" alt="image-20250723171004717"></p>
+<p>他这里报错原因就是我们没post传值</p>
+<p>我们在传值试试</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250723171056676.png" alt="image-20250723171056676"></p>
+<h5 id="解法1-1"><a href="#解法1-1" class="headerlink" title="解法1"></a>解法1</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?action=current&amp;a=current</span><br><span class="line">post:a[]=system&amp;b=whoami</span><br></pre></td></tr></table></figure>
+
+<p>这道题的难点就在于</p>
+<p><code>($_POST[&#39;a&#39;])($_POST[&#39;b&#39;]);</code> 如何利用，因为php中根本就没有这种写法，我们就很容易想到，会不会是先执行<code>call_user_func</code> 然后又出现一个函数执行第一个post，最后在执行 最后一个post，这里通过payload，</p>
+<p>我们去官方文档查查 <code>current</code> 是个什么函数</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722214732234.png" alt="image-20250722214732234"></p>
+<p>通过这个例子我们可以知道current就是 返回数组中的当前值</p>
+<p>我们给action传入current，parameters数组中又是current，所以经过call_user_func把current取出来了，</p>
+<p>就形成了current([system])(whoami)</p>
+<p>current 又将system取出来</p>
+<p>system(whoami)</p>
+<p>然后执行了rce</p>
+<h5 id="解法2-1"><a href="#解法2-1" class="headerlink" title="解法2"></a>解法2</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?action=Closure::fromCallable&amp;0=Closure&amp;1=fromCallable</span><br><span class="line">post:a=system&amp;b=ls</span><br></pre></td></tr></table></figure>
+
+<p>第二个的解法思路也感觉跟解法1差不多，就是函数用的不一样，我们去查一下</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722215610624.png" alt="image-20250722215610624"></p>
+<p>我们可以看到它可以将callback 转换为闭包（closure）对象</p>
+<p>也就是说，这里我们给cation传入的Closure::fromCallable，</p>
+<p>数组传入的是<code>[&quot;Closure&quot;, &quot;fromCallable&quot;]</code></p>
+<p>经过<code>call_user_func</code> 我们得到一个 <code>Closure</code> 对象，对应的是 <code>Closure::fromCallable</code> 这个函数本身的封装。</p>
+<p>然后由这个函数来执行post[‘a’] 就变成了system(ls)</p>
+<p>下面有一些实列能帮助我们理解</p>
+<h6 id="示例-1：将普通函数转换为闭包"><a href="#示例-1：将普通函数转换为闭包" class="headerlink" title="示例 1：将普通函数转换为闭包"></a>示例 1：将普通函数转换为闭包</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?Php</span><br><span class="line">function sayHello($name) &#123;</span><br><span class="line">  return &quot;Hello, $name!&quot;;</span><br><span class="line">&#125;</span><br><span class="line">// 使用 Closure::fromCallable 将普通函数转换为闭包$closure = Closure::fromCallable(&#x27;sayHello&#x27;);</span><br><span class="line">// 调用闭包echo $closure(&#x27;World&#x27;); // 输出：Hello, World!?&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h6 id="示例-2：将类方法转换为闭包"><a href="#示例-2：将类方法转换为闭包" class="headerlink" title="示例 2：将类方法转换为闭包"></a>示例 2：将类方法转换为闭包</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?Php</span><br><span class="line"></span><br><span class="line">class Greeter &#123;</span><br><span class="line">  public function greet($name) &#123;</span><br><span class="line">    return &quot;Greetings, $name!&quot;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">$greeter = new Greeter();</span><br><span class="line">// 将实例方法转换为闭包$closure = Closure::fromCallable([$greeter, &#x27;greet&#x27;]);</span><br><span class="line">// 调用闭包echo $closure(&#x27;Alice&#x27;); // 输出：Greetings, Alice!?&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h6 id="示例-3：将静态方法转换为闭包"><a href="#示例-3：将静态方法转换为闭包" class="headerlink" title="示例 3：将静态方法转换为闭包"></a>示例 3：将静态方法转换为闭包</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?Php</span><br><span class="line">class StaticGreeter &#123;</span><br><span class="line">  public static function greet($name) &#123;</span><br><span class="line">    return &quot;Hello from static, $name!&quot;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">// 将静态方法转换为闭包$closure = Closure::fromCallable([&#x27;StaticGreeter&#x27;, &#x27;greet&#x27;]);</span><br><span class="line">// 调用闭包echo $closure(&#x27;Bob&#x27;); // 输出：Hello from static, Bob!?&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h6 id="示例-4：将匿名函数转换为闭包"><a href="#示例-4：将匿名函数转换为闭包" class="headerlink" title="示例 4：将匿名函数转换为闭包"></a>示例 4：将匿名函数转换为闭包</h6><p>虽然匿名函数本身已经是闭包，但 <code>Closure::fromCallable</code> 可以用来创建一个新闭包对象：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$anonFunction` = `function($name) &#123;</span><br><span class="line">  return &quot;Hi, $name!&quot;;</span><br><span class="line">&#125;;</span><br><span class="line">// 将匿名函数转换为闭包$closure = Closure::fromCallable($anonFunction);</span><br><span class="line">// 调用闭包echo $closure(&#x27;Charlie&#x27;); // 输出：Hi, Charlie!?&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h6 id="示例-5：使用可调用对象"><a href="#示例-5：使用可调用对象" class="headerlink" title="示例 5：使用可调用对象"></a>示例 5：使用可调用对象</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;?phpclass CallableClass &#123;</span><br><span class="line">  public function __invoke($name) &#123;</span><br><span class="line">    return &quot;Invoked with $name!&quot;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">$callableObject = new CallableClass();</span><br><span class="line">// 将可调用对象转换为闭包$closure = Closure::fromCallable($callableObject);</span><br><span class="line">// 调用闭包echo $closure(&#x27;Dave&#x27;); // 输出：Invoked with Dave!?&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h6 id><a href="#" class="headerlink" title></a></h6><p><code>Closure::fromCallable</code> 方法提供了一种方便的方式将不同类型的可调用（函数、类方法、可调用对象）转换为闭包对象，从而可以用统一的方式来调用这些可调用。这个特性在编写更灵活的代码时非常有用，比如在函数式编程中或需要将不同的回调传递给函数时。</p>
+<h2 id="web3"><a href="#web3" class="headerlink" title="web3"></a>web3</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">    unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line">call_user_func($action, $parameters);</span><br><span class="line">if(count(glob(__DIR__.&#x27;/*&#x27;))&gt;3)&#123;</span><br><span class="line">    readfile(&#x27;flag.txt&#x27;);</span><br><span class="line">&#125;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>分析</p>
+<p>这里利用的是readfile函数来读flag，但是这里判断了当前文件夹里是否有3个以上的文件，</p>
+<p>这里我们知道，他原本的环境下应该只有两个文件，所以我们得想办法创建两个文件，</p>
+<p>但是这里测试发现，常规的创建文件的方法都不适用，因为我们这里传入的第二个参数是一个数组</p>
+<p>这里题目给的思路很独特，用用session，来创建文件</p>
+<p>我们知道当用户与服务器开启对话的时候，客户端会生成ck，服务端会生成session文件，那么我们是不是可以尝试这个思路呢？</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722222738373.png" alt="image-20250722222738373"></p>
+<p>查询官方文档发现<code>session_start</code>正好他可以通过<code>session.save_path</code> ；来指定路径，然后会创建session文件</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722223034185.png" alt="image-20250722223034185"></p>
+<p>而且这个参数是用户可控的</p>
+<p>在写入文件之前，首先通过报错来定位当前物理路径，报错的方法有很多，大体是通过引入一个函数并传递“不合法”的参数。</p>
+<p>那么我们很容易想到payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?action=session_start&amp;save_path=/var/www</span><br></pre></td></tr></table></figure>
+
+<p>测试发现无法写入&#x2F;var&#x2F;www&#x2F;html</p>
+<p>但是将目录改为&#x2F;tmp,却成功写入了</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722223622812.png" alt="image-20250722223622812"></p>
+<p>这里问大模型说</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722224048867.png" alt="image-20250722224048867"></p>
+<p>当时的题目环境可能设置了这个吧</p>
+<p>另外，其实也考虑过利用 upload_progress 来控制写入文件的内容，再配合其他include 来加载shell。这里有几点需要说明：</p>
+<ol>
+<li><p>需要开启 session.auto_start ，这个配置是无法动态开启的，需要环境默认开启。</p>
+</li>
+<li><p>写入文件以后，文件是以sess_ 开头并且文件名只能由这些字符构成：(0-9, a-z, A-Z, “-“, “,”) 。这也导致了不能直接写.php文件。</p>
+</li>
+</ol>
+<h2 id="web4"><a href="#web4" class="headerlink" title="web4"></a>web4</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">Class A&#123;</span><br><span class="line">    static function f()&#123;</span><br><span class="line">        system($_POST[&#x27;a&#x27;]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func($action, $parameters);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>本题是为了演示加载静态方法（无参类型或参数均含有默认值）</p>
+<p>这道题就很简单了</p>
+<p>先调用A 这个class，然后在调用f这个函数，最后post[‘a’]传入执行的代码</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?action=call_user_func&amp;0=A&amp;1=f</span><br><span class="line">post: a=ls</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722224632555.png" alt="image-20250722224632555"></p>
+<h2 id="web5"><a href="#web5" class="headerlink" title="web5"></a>web5</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">Class A&#123;</span><br><span class="line">    static function f(string $a)&#123;</span><br><span class="line">        system($a);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$action = $_GET[&#x27;action&#x27;];</span><br><span class="line">$parameters = $_GET;</span><br><span class="line">if (isset($parameters[&#x27;action&#x27;])) &#123;</span><br><span class="line">unset($parameters[&#x27;action&#x27;]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">call_user_func($action, $parameters);</span><br><span class="line">echo $_POST[&#x27;a&#x27;];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这道题与上一道题的改变就是我们无法直接利用post[‘a’] 传入我们的执行代码了</p>
+<p>payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?action=ob_start&amp;0=A&amp;1=f</span><br><span class="line">post: a=touch /tmp/aaa</span><br></pre></td></tr></table></figure>
+
+<p>这里他利用了<code>ob_start</code> 这个函数，我们去官方文档查查看</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722230857336.png" alt="image-20250722230857336"></p>
+<p>他说他能够打开输出的缓冲区</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722231539904.png" alt="image-20250722231539904"></p>
+<p>而且他说当冲刷（发送）、清理输出缓冲区或在脚本末尾冲刷输出缓冲区时，将调用 <code>callback</code>。</p>
+<p>也就是说我们打开缓冲区后，$a 会自动的读取缓冲区的内容</p>
+<p>所以我们可以在post[‘a’] ，实现任意的rce</p>
+<p>比如</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233100827.png" alt="image-20250722233100827"></p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233104960.png" alt="image-20250722233104960"></p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233111387.png" alt="image-20250722233111387"></p>
+<p>这里的任意命令都可以执行，我们尝试执行一下 whoami</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233144087.png" alt="image-20250722233144087"></p>
+<p>但却发现没有回显，问问大模型</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233211207.png" alt="image-20250722233211207"></p>
+<p>我们修改一下源代码，加入return</p>
+<p>再次测试</p>
+<p><img src="/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/image-20250722233250238.png" alt="image-20250722233250238"></p>
+<p>成功回显，可能问题就是这里，这里我们可以发现，当我们打开缓冲区后，$a 会从缓冲区来取值，</p>
+<p>从而实现rce</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在这样的代码环境下，我们能做的有这样几点：</p>
+<ol>
+<li><p>可通过var_dump引入反射型xss(<code>?action=var_dump&amp;1=&lt;script&gt;alert(1)&lt;/script&gt;</code>)；</p>
+</li>
+<li><p>可通过引入报错来获取物理路径；</p>
+</li>
+<li><p>可通过session_start 写入文件，写入文件路径可自定义，文件内容是否可控要看服务器配置；</p>
+</li>
+<li><p>加载php内置函数或原生类&#x2F;已有类的静态方法，函数参数类型需为：Array、Mixed、callable。 其中callable类型可再次加载 ，并以数组形式传入类名和静态方法名称。 如果函数有多个参数，其他参数需要有默认参数，无默认参数的那个参数需满足以上参数类型条件。若函数参数均有默认参数,首个参数类型需满足以上参数类型条件。</p>
+</li>
+<li><p>当有echo 配合时，可通过ob_start 加载原生类&#x2F;已有类的静态函数，函数参数支持string类型。</p>
+</li>
+</ol>
+</div><div class="post-copyright"><div class="post-copyright-author"><span class="post-copyright-meta">本文作者: </span><span class="post-copyright-info"><a href="mailto:undefined">JGwebre</a></span></div><div class="post-copyright-type"><span class="post-copyright-meta">本文链接: </span><span class="post-copyright-info"><a href="https://heisha123.github.io/2025/07/22/RCE-5%E9%81%93%E6%8C%91%E6%88%98%E9%A2%98/">https://heisha123.github.io/2025/07/22/RCE-5道挑战题/</a></span></div><div class="post-copyright-notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本站点所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://heisha123.github.io">JG的个人博客</a>！</span></div></div><div class="post-copyright valine" id="comments-container"><script src="//unpkg.com/valine@1.4.14/dist/Valine.min.js"></script><script>let arr = location.href.split('/#more')[0].split('/');
+let title = arr[arr.length - 1];
+if (title === '') {
+    title = arr[arr.length - 2];
+}
+var flag = false;
+var gitFun = function () {
+    try {
+        var valineObj = window.GLOBAL_CONFIG.valine;
+        new Valine({
+            el: "#comments-container",
+            ...valineObj
+        });
+        flag = true;
+    } catch (e) {
+        flag = false;
+    }
+}
+var setIn = setInterval(() => {
+    if (!flag) {
+        gitFun();
+    } else {
+        clearInterval(setIn);
+    }
+}, 200);</script></div></article><div id="pagination"><div class="prev-post pull-left"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/23/rce%E7%9A%84%E4%B8%80%E4%BA%9B%E5%A5%87%E6%8A%80%E6%B7%AB%E5%B7%A7/"><i class="fas fa-angle-left">&nbsp;</i><span>rce的一些奇技淫巧</span></a></div><div class="next-post pull-right"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/07/19/GYCTF2020-Ez-Express/"><span>[GYCTF2020]Ez_Express</span><span>&nbsp;</span><i class="fas fa-angle-right"></i></a></div></div><!--div!= paginator()--></div></div><div class="button-hover" id="return-top"><i class="fas fa-arrow-up" aria-hidden="true"></i></div><footer><div id="footer"><div class="button-hover" id="side-button"><i class="fas fa-arrow-right"></i></div><div class="right-content"><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fas fa-file-o"></i></span><span id="busuanzi_value_page_pv"></span><span></span></div><div class="copyright">&copy;2025 By JGwebre</div></div></div></footer></div><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery-3.3.1.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/velocity.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery.mCustomScrollbar.concat.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/fan.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/canvas_bg.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/utils.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/scroll.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/sidebar.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/copy.js"></script><!--script(src=url)--><div class="search-dialog"><div id="algolia-search-title">Algolia</div><div class="search-close-button"><i class="fa fa-times"></i></div><!--div#current-refined-values--><!--div#clear-all--><div id="search-box"></div><!--div#refinement-list--><hr><div id="hits"></div><div id="algolia-pagination"></div></div><div class="search-mask"></div><script src="/js/search/algolia.js"></script></body></html>

